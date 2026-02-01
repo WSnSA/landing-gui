@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Mail, Lock, User, ArrowLeft, Building } from "lucide-react";
-import logo from "figma:asset/dee2a0a671c744517d913c328202b0eb534c6702.png";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -18,7 +17,7 @@ export default function RegisterPage() {
       <header className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="LANDING.MN" className="h-8" />
+            <img src='../../../assets/logo_landing.png' alt="LANDING.MN" className="h-8" />
           </Link>
           <Link
             to="/"
