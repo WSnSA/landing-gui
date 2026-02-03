@@ -31,13 +31,14 @@ jobs:
           "IMAGE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       # -----------------------------
-      # 3. Login to GHCR (NO PAT)
+      # 3. Login to GHCR (CORRECT WAY)
       # -----------------------------
       - name: Login GHCR
-        shell: powershell
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" |
-          docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # -----------------------------
       # 4. Build Docker image
