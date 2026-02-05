@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       await login(form);
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (err: any) {
       setError(err.message || "Нэвтрэх боломжгүй");
     } finally {
