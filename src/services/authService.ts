@@ -1,50 +1,32 @@
-import { api } from "./api";
+import type {
+  LoginRequest, LoginResponse,
+  RegisterRequest, RegisterResponse,
+  ForgotPasswordRequest, ResetPasswordRequest,
+  RefreshTokenRequest, RefreshTokenResponse,
+  LogoutRequest,
+} from "../types/dto";
+import { apiFetch } from "./apiClient";
 
-export interface RegisterRequest {
-    fullname: string;
-    email: string;
-    registerNumber: string;
-    phone: string;
-    password: string;
-    confirmPassword: string;
-    terms: boolean;
-}
-
-export interface RegisterResponse {
-    id: number;
-    email: string;
-    fullName: string;
-    role: "USER" | "ADMIN";
-}
-
-export function registerUser(data: RegisterRequest) {
-    return api<RegisterResponse>("/api/auth/register", {
-        method: "POST",
-        body: data,
-    });
-}
-
-export function login(data: { username: string; password: string }) {
-    return api("/api/auth/login", {
-        method: "POST",
-        body: data,
-    });
-}
-
-export function forgotPassword(email: string) {
-    return api("/api/auth/forgot-password", {
-        method: "POST",
-        body: { email },
-    });
-}
-
-export function resetPassword(data: {
-    token: string;
-    newPassword: string;
-    confirmPassword: string;
-}) {
-    return api("/api/auth/reset-password", {
-        method: "POST",
-        body: data,
-    });
-}
+export const authService = {
+  login(req: LoginRequest) {
+    return apiFetch<LoginResponse>("/api/auth/login", { method: "POST", body: JSON.stringify(req) }, false);
+  },
+  register(req: RegisterRequest) {
+    return apiFetch<RegisterResponse>("/api/auth/register", { method: "POST", body: JSON.stringify(req) }, false);
+  },
+  refresh(req: RefreshTokenRequest) {
+    return apiFetch<RefreshTokenResponse>("/api/auth/refresh", { method: "POST", body: JSON.stringify(req) }, false);
+  },
+  logout(req: LogoutRequest) {
+    return apiFetch<void>("/api/auth/logout", { method: "POST", body: JSON.stringify(req) });
+  },
+  forgot(req: ForgotPasswordRequest) {
+    return apiFetch<void>("/api/auth/forgot-password", { method: "POST", body: JSON.stringify(req) }, false);
+  },
+  reset(req: ResetPasswordRequest) {
+    return apiFetch<void>("/api/auth/reset-password", { method: "POST", body: JSON.stringify(req) }, false);
+  },
+  me() {
+    return apiFetch<any>("/api/auth/me", { method: "GET" });
+  },
+};

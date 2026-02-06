@@ -1,238 +1,97 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { motion } from "motion/react";
-import {
-  Mail,
-  Lock,
-  User,
-  ArrowLeft,
-  Phone,
-  IdCard,
-} from "lucide-react";
-import {registerUser} from "../../../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, Card, Field, Input } from "../../../components/ui";
+import { authService } from "../../../services/authService";
+import type { ApiError } from "../../../services/apiClient";
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
+  const nav = useNavigate();
 
-  const [form, setForm] = useState({
-    fullname: "",
-    email: "",
-    registerNumber: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    terms: false,
-  });
+  const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [registerNumber, setRegisterNumber] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [terms, setTerms] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  // @ts-ignore
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErr(null);
+    setOk(null);
 
-    if (form.password.length < 8) {
-      setError("Нууц үг дор хаяж 8 тэмдэгт байх ёстой");
-      return;
-    }
+    if (!terms) return setErr("Үйлчилгээний нөхцлийг зөвшөөрнө үү.");
+    if (password !== confirmPassword) return setErr("Нууц үг таарахгүй байна.");
 
-    if (form.password !== form.confirmPassword) {
-      setError("Нууц үг таарахгүй байна");
-      return;
-    }
-
-    if (!form.terms) {
-      setError("Үйлчилгээний нөхцөлийг зөвшөөрнө үү");
-      return;
-    }
-
+    setBusy(true);
     try {
-      setLoading(true);
-      await registerUser(form);
-      navigate("/login");
-    } catch (err: any) {
-      setError(err.message || "Бүртгэл амжилтгүй");
+      await authService.register({ fullname, email, registerNumber, phone, password, confirmPassword, terms });
+      setOk("Бүртгэл амжилттай. Одоо нэвтэрнэ үү.");
+      nav("/login", { replace: true });
+    } catch (e: any) {
+      const ae = e as ApiError;
+      setErr(
+        ae?.payload && typeof ae.payload === "object"
+          ? JSON.stringify(ae.payload)
+          : "Бүртгүүлэхэд алдаа гарлаа."
+      );
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   return (
-      <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
-        {/* Header */}
-        <header className="border-b border-gray-200 bg-white">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center">
-              <img
-                  src="../../../assets/logo_landing.png"
-                  alt="LANDING.MN"
-                  className="h-8"
-              />
-            </Link>
-            <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-[#64748B] hover:text-[#0F172A]"
-            >
-              <ArrowLeft className="size-4" />
-              Нүүр хуудас
-            </Link>
+    <div className="min-h-screen bg-slate-50 grid place-items-center px-4">
+      <Card className="w-full max-w-xl p-6">
+        <div className="text-xl font-bold">Бүртгүүлэх</div>
+        <div className="mt-1 text-sm text-slate-600">Мэдээллээ бөглөөд account үүсгэнэ.</div>
+
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Овог нэр">
+              <Input value={fullname} onChange={(e) => setFullname(e.target.value)} />
+            </Field>
+            <Field label="Email">
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+            </Field>
+            <Field label="Регистр">
+              <Input value={registerNumber} onChange={(e) => setRegisterNumber(e.target.value)} />
+            </Field>
+            <Field label="Утас">
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </Field>
           </div>
-        </header>
 
-        {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-6 py-12">
-          <motion.div
-              className="w-full max-w-md"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="bg-white rounded-2xl shadow-xl border p-8">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-[#0F172A]">
-                  Бүртгүүлэх
-                </h1>
-                <p className="text-[#64748B] mt-1">
-                  Өөрийн анхны landing хуудсаа үүсгэх
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Full name */}
-                <Input
-                    label="Овог нэр"
-                    icon={<User />}
-                    name="fullname"
-                    value={form.fullname}
-                    onChange={onChange}
-                    placeholder="Б. Болд"
-                />
-
-                {/* Email */}
-                <Input
-                    label="Имейл хаяг"
-                    icon={<Mail />}
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={onChange}
-                    placeholder="example@email.com"
-                />
-
-                {/* Register number */}
-                <Input
-                    label="Регистрийн дугаар"
-                    icon={<IdCard />}
-                    name="registerNumber"
-                    value={form.registerNumber}
-                    onChange={onChange}
-                    placeholder="УБ99112233"
-                />
-
-                {/* Phone */}
-                <Input
-                    label="Утасны дугаар"
-                    icon={<Phone />}
-                    name="phone"
-                    value={form.phone}
-                    onChange={onChange}
-                    placeholder="99112233"
-                />
-
-                {/* Password */}
-                <Input
-                    label="Нууц үг"
-                    icon={<Lock />}
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={onChange}
-                    placeholder="••••••••"
-                />
-
-                {/* Confirm password */}
-                <Input
-                    label="Нууц үг баталгаажуулах"
-                    icon={<Lock />}
-                    type="password"
-                    name="confirmPassword"
-                    value={form.confirmPassword}
-                    onChange={onChange}
-                    placeholder="••••••••"
-                />
-
-                {/* Terms */}
-                <label className="flex gap-2 text-sm text-[#64748B]">
-                  <input
-                      type="checkbox"
-                      name="terms"
-                      checked={form.terms}
-                      onChange={onChange}
-                  />
-                  Би үйлчилгээний нөхцөл болон нууцлалын бодлогыг зөвшөөрч байна
-                </label>
-
-                {error && (
-                    <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
-                      {error}
-                    </div>
-                )}
-
-                <motion.button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-[#2563EB] text-white rounded-lg font-medium disabled:opacity-60"
-                    whileTap={{ scale: 0.98 }}
-                >
-                  {loading ? "Бүртгэж байна..." : "Бүртгүүлэх"}
-                </motion.button>
-              </form>
-
-              <p className="mt-6 text-sm text-center text-[#64748B]">
-                Аль хэдийн бүртгэлтэй юу?{" "}
-                <Link to="/login" className="text-[#2563EB] font-medium">
-                  Нэвтрэх
-                </Link>
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-  );
-}
-
-/* ---------- Reusable Input ---------- */
-function Input({
-                 label,
-                 icon,
-                 ...props
-               }: {
-  label: string;
-  icon: React.ReactNode;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-      <div>
-        <label className="block text-sm font-medium mb-1 text-[#0F172A]">
-          {label}
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-3 flex items-center text-[#64748B]">
-            {icon}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Нууц үг">
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </Field>
+            <Field label="Нууц үг давтах">
+              <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            </Field>
           </div>
-          <input
-              {...props}
-              required
-              className="w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-[#2563EB] outline-none"
-          />
-        </div>
-      </div>
+
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+            <span>
+              Би <Link to="/terms" className="text-blue-700 hover:underline">Үйлчилгээний нөхцөл</Link> зөвшөөрч байна.
+            </span>
+          </label>
+
+          {err ? <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{err}</div> : null}
+          {ok ? <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">{ok}</div> : null}
+
+          <Button type="submit" className="w-full" loading={busy}>Бүртгүүлэх</Button>
+
+          <div className="text-sm text-slate-600 text-center">
+            Account байна уу? <Link to="/login" className="text-blue-700 hover:underline">Нэвтрэх</Link>
+          </div>
+        </form>
+      </Card>
+    </div>
   );
 }

@@ -1,93 +1,69 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { Mail, Lock } from "lucide-react";
-import { motion } from "motion/react";
-import { login } from "../../../services/authService";
+import { useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button, Card, Field, Input } from "../../../components/ui";
+import { authService } from "../../../services/authService";
+import { useAuth } from "../../../auth/AuthContext";
+import type { ApiError } from "../../../services/apiClient";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
+  const nav = useNavigate();
+  const loc = useLocation() as any;
+  const { setSessionFromLogin } = useAuth();
 
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-  });
+  const from = useMemo(() => loc?.state?.from as string | undefined, [loc]);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-  // @ts-ignore
-  const submit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
+    setErr(null);
+    setBusy(true);
     try {
-      setLoading(true);
-      await login(form);
-      navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Нэвтрэх боломжгүй");
+      const res = await authService.login({ username, password });
+      setSessionFromLogin(res);
+      nav(from ?? "/onboarding", { replace: true });
+    } catch (e: any) {
+      const ae = e as ApiError;
+      setErr(
+        ae?.payload && typeof ae.payload === "object"
+          ? JSON.stringify(ae.payload)
+          : "Нэвтрэхэд алдаа гарлаа. Мэдээллээ шалгана уу."
+      );
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <motion.form
-            onSubmit={submit}
-            className="bg-white p-8 rounded-xl shadow w-full max-w-md space-y-4"
-        >
-          <h1 className="text-2xl font-bold text-center">Нэвтрэх</h1>
+    <div className="min-h-screen bg-slate-50 grid place-items-center px-4">
+      <Card className="w-full max-w-md p-6">
+        <div className="text-xl font-bold">Нэвтрэх</div>
+        <div className="mt-1 text-sm text-slate-600">Email/Phone болон нууц үгээ оруулна уу.</div>
 
-          <Input
-              icon={<Mail />}
-              name="username"
-              placeholder="Имэйл эсвэл утас"
-              onChange={onChange}
-          />
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          <Field label="Email эсвэл Утас">
+            <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="example@mail.com" />
+          </Field>
+          <Field label="Нууц үг">
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+          </Field>
 
-          <Input
-              icon={<Lock />}
-              name="password"
-              type="password"
-              placeholder="Нууц үг"
-              onChange={onChange}
-          />
+          {err ? <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{err}</div> : null}
 
-          {error && <div className="text-red-600 text-sm">{error}</div>}
+          <Button type="submit" className="w-full" loading={busy}>
+            Нэвтрэх
+          </Button>
 
-          <button
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded"
-          >
-            {loading ? "Түр хүлээнэ үү..." : "Нэвтрэх"}
-          </button>
-
-          <div className="text-sm text-center">
-            <Link to="/forgot-password" className="text-blue-600">
-              Нууц үгээ мартсан уу?
-            </Link>
+          <div className="flex items-center justify-between text-sm">
+            <Link to="/forgot-password" className="text-blue-700 hover:underline">Нууц үг мартсан?</Link>
+            <Link to="/register" className="text-slate-600 hover:underline">Бүртгүүлэх</Link>
           </div>
-        </motion.form>
-      </div>
-  );
-}
-
-function Input(props: any) {
-  return (
-      <div className="relative">
-        <div className="absolute left-3 top-2.5 text-gray-400">
-          {props.icon}
-        </div>
-        <input
-            {...props}
-            required
-            className="w-full pl-10 py-2 border rounded"
-        />
-      </div>
+        </form>
+      </Card>
+    </div>
   );
 }

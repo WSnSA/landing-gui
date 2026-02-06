@@ -1,80 +1,64 @@
-import { useSearchParams, useNavigate } from "react-router";
 import { useState } from "react";
-import { Lock } from "lucide-react";
-import {resetPassword} from "../../../services/authService";
+import { Link, useSearchParams } from "react-router-dom";
+import { Button, Card, Field, Input } from "../../../components/ui";
+import { authService } from "../../../services/authService";
+import type { ApiError } from "../../../services/apiClient";
 
 export default function ResetPasswordPage() {
-    const [params] = useSearchParams();
-    const navigate = useNavigate();
-    const token = params.get("token");
+  const [sp] = useSearchParams();
+  const tokenFromUrl = sp.get("token") ?? "";
 
-    const [form, setForm] = useState({
-        newPassword: "",
-        confirmPassword: "",
-    });
+  const [token, setToken] = useState(tokenFromUrl);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-    const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
-    if (!token) {
-        return <div className="p-10">Token байхгүй</div>;
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    setMsg(null);
+    if (newPassword !== confirmPassword) return setErr("Нууц үг таарахгүй байна.");
+    setBusy(true);
+    try {
+      await authService.reset({ token, newPassword, confirmPassword });
+      setMsg("Нууц үг амжилттай шинэчлэгдлээ. Одоо нэвтэрч болно.");
+    } catch (e: any) {
+      const ae = e as ApiError;
+      setErr(ae?.payload ? JSON.stringify(ae.payload) : "Алдаа гарлаа.");
+    } finally {
+      setBusy(false);
     }
+  };
 
-    // @ts-ignore
-    const submit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+  return (
+    <div className="min-h-screen bg-slate-50 grid place-items-center px-4">
+      <Card className="w-full max-w-md p-6">
+        <div className="text-xl font-bold">Нууц үг шинэчлэх</div>
 
-        try {
-            await resetPassword({
-                token,
-                newPassword: form.newPassword,
-                confirmPassword: form.confirmPassword,
-            });
-            navigate("/login");
-        } catch (err: any) {
-            setError(err.message || "Алдаа гарлаа");
-        }
-    };
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          <Field label="Token">
+            <Input value={token} onChange={(e) => setToken(e.target.value)} />
+          </Field>
+          <Field label="Шинэ нууц үг">
+            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          </Field>
+          <Field label="Шинэ нууц үг давтах">
+            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          </Field>
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <form
-                onSubmit={submit}
-                className="bg-white p-8 rounded-xl shadow w-full max-w-md space-y-4"
-            >
-                <h1 className="text-xl font-bold text-center">Нууц үг солих</h1>
+          {err ? <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{err}</div> : null}
+          {msg ? <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">{msg}</div> : null}
 
-                <Input
-                    type="password"
-                    placeholder="Шинэ нууц үг"
-                    onChange={(e: any) =>
-                        setForm({ ...form, newPassword: e.target.value })
-                    }
-                />
+          <Button type="submit" className="w-full" loading={busy}>Хадгалах</Button>
 
-                <Input
-                    type="password"
-                    placeholder="Баталгаажуулах"
-                    onChange={(e: any) =>
-                        setForm({ ...form, confirmPassword: e.target.value })
-                    }
-                />
-
-                {error && <div className="text-red-600 text-sm">{error}</div>}
-
-                <button className="w-full bg-blue-600 text-white py-2 rounded">
-                    Хадгалах
-                </button>
-            </form>
-        </div>
-    );
-}
-
-function Input(props: any) {
-    return (
-        <div className="relative">
-            <Lock className="absolute left-3 top-2.5 text-gray-400" />
-            <input {...props} required className="w-full pl-10 py-2 border rounded" />
-        </div>
-    );
+          <div className="text-sm text-slate-600 text-center">
+            <Link to="/login" className="text-blue-700 hover:underline">Нэвтрэх</Link>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
 }

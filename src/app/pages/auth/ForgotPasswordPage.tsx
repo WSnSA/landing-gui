@@ -1,59 +1,53 @@
 import { useState } from "react";
-import { Mail } from "lucide-react";
-import {forgotPassword} from "../../../services/authService";
+import { Link } from "react-router-dom";
+import { Button, Card, Field, Input } from "../../../components/ui";
+import {authService} from "../../../services/authService";
+import {ApiError} from "../../../services/apiClient";
 
 export default function ForgotPasswordPage() {
-    const [email, setEmail] = useState("");
-    const [sent, setSent] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
-    // @ts-ignore
-    const submit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+  // @ts-ignore
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    setMsg(null);
+    setBusy(true);
+    try {
+      await authService.forgot({ email });
+      setMsg("И-мэйл рүү сэргээх линк илгээгдлээ (хэрэв бүртгэлтэй бол).");
+    } catch (e: any) {
+      const ae = e as ApiError;
+      setErr(ae?.payload ? JSON.stringify(ae.payload) : "Алдаа гарлаа.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
-        try {
-            await forgotPassword(email);
-            setSent(true);
-        } catch (err: any) {
-            setError(err.message || "Алдаа гарлаа");
-        }
-    };
+  return (
+    <div className="min-h-screen bg-slate-50 grid place-items-center px-4">
+      <Card className="w-full max-w-md p-6">
+        <div className="text-xl font-bold">Нууц үг сэргээх</div>
+        <div className="mt-1 text-sm text-slate-600">Бүртгэлтэй имэйлээ оруулна уу.</div>
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <form
-                onSubmit={submit}
-                className="bg-white p-8 rounded-xl shadow w-full max-w-md space-y-4"
-            >
-                <h1 className="text-xl font-bold text-center">Нууц үг сэргээх</h1>
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          <Field label="Email">
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+          </Field>
 
-                {sent ? (
-                    <p className="text-green-600 text-sm">
-                        Имэйл илгээгдлээ. Inbox шалгана уу.
-                    </p>
-                ) : (
-                    <>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-2.5 text-gray-400" />
-                            <input
-                                type="email"
-                                required
-                                placeholder="Имэйл хаяг"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-10 py-2 border rounded"
-                            />
-                        </div>
+          {err ? <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{err}</div> : null}
+          {msg ? <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">{msg}</div> : null}
 
-                        {error && <div className="text-red-600 text-sm">{error}</div>}
+          <Button type="submit" className="w-full" loading={busy}>Илгээх</Button>
 
-                        <button className="w-full bg-blue-600 text-white py-2 rounded">
-                            Илгээх
-                        </button>
-                    </>
-                )}
-            </form>
-        </div>
-    );
+          <div className="text-sm text-slate-600 text-center">
+            <Link to="/login" className="text-blue-700 hover:underline">Нэвтрэх рүү буцах</Link>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
 }
