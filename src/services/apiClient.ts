@@ -26,6 +26,7 @@ async function readPayload(res: Response) {
   return await res.text().catch(() => null);
 }
 
+
 let refreshing: Promise<RefreshTokenResponse | null> | null = null;
 
 // @ts-ignore
