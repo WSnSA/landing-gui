@@ -1,174 +1,131 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Button, Card } from "../../../components/ui";
-import { landingService } from "../../../services/landingService";
-import { pageService } from "../../../services/pageService";
-import { sectionService } from "../../../services/sectionService";
-import { componentService } from "../../../services/componentService";
-import { publicService } from "../../../services/publicService";
-import type { ComponentResponse, LandingResponse, PageResponse, PublicLandingResponse, SectionResponse } from "../../../types/dto";
-import { safeJsonParse } from "../../../utils/format";
-
-type Tree = {
-  landing: LandingResponse;
-  pages: Array<{
-    page: PageResponse;
-    sections: Array<{
-      section: SectionResponse;
-      components: ComponentResponse[];
-    }>;
-  }>;
-};
-
-function renderComponent(type: string, propsJson: string | null) {
-  const props = safeJsonParse<any>(propsJson, {});
-  if (type === "TEXT") return <p className="text-slate-700">{props.text ?? "…"}</p>;
-  if (type === "BUTTON") return (
-    <a className="inline-flex rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-       href={props.href ?? "#"}>{props.label ?? "Button"}</a>
-  );
-  if (type === "IMAGE") return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
-      IMAGE: {props.src ?? "(src байхгүй)"}
-    </div>
-  );
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
-      <div className="font-medium">{type}</div>
-      <pre className="mt-2 text-xs overflow-auto">{JSON.stringify(props, null, 2)}</pre>
-    </div>
-  );
-}
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Button } from "../../components/ui";
+import { landingService } from "../../services/landingService";
+import { pageService } from "../../services/pageService";
+import { sectionService } from "../../services/sectionService";
+import { componentService } from "../../services/componentService";
+import { LandingRenderer, type RendererPage } from "../../components/LandingRenderer";
+import type { LandingResponse } from "../../types/dto";
 
 export default function PreviewPage() {
   const { projectId } = useParams();
   const id = Number(projectId);
 
   const [landing, setLanding] = useState<LandingResponse | null>(null);
-  const [publicData, setPublicData] = useState<PublicLandingResponse | null>(null);
-  const [tree, setTree] = useState<Tree | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [pages, setPages] = useState<RendererPage[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    setBusy(true);
+    setLoading(true);
     try {
       const l = await landingService.get(id);
       setLanding(l);
 
-      // Try public preview by slug first (if published)
-      try {
-        const pub = await publicService.bySlug(l.slug);
-        setPublicData(pub);
-        setTree(null);
-        return;
-      } catch {
-        setPublicData(null);
-      }
+      const rawPages = await pageService.list(id);
+      const sorted = rawPages.slice().sort((a, b) => a.orderIndex - b.orderIndex);
 
-      // Internal preview
-      const pages = await pageService.list(id);
-      const pagesSorted = pages.slice().sort((a, b) => a.orderIndex - b.orderIndex);
-
-      const out: Tree = { landing: l, pages: [] };
-      for (const p of pagesSorted) {
+      const result: RendererPage[] = [];
+      for (const p of sorted) {
         const secs = await sectionService.list(p.id);
         const secsSorted = secs.slice().sort((a, b) => a.orderIndex - b.orderIndex);
-
-        const sNodes: Tree["pages"][0]["sections"] = [];
+        const rendererSections = [];
         for (const s of secsSorted) {
           const comps = await componentService.list(s.id);
-          const compsSorted = comps.slice().sort((a, b) => a.orderIndex - b.orderIndex);
-          sNodes.push({ section: s, components: compsSorted });
+          rendererSections.push({
+            id: s.id,
+            sectionKey: s.sectionKey,
+            title: s.title ?? null,
+            orderIndex: s.orderIndex,
+            components: comps.slice().sort((a, b) => a.orderIndex - b.orderIndex).map((c) => ({
+              id: c.id,
+              componentType: c.componentType,
+              propsJson: c.propsJson ?? null,
+              orderIndex: c.orderIndex,
+            })),
+          });
         }
-        out.pages.push({ page: p, sections: sNodes });
+        result.push({
+          id: p.id,
+          title: p.title,
+          path: p.path ?? "/",
+          orderIndex: p.orderIndex,
+          sections: rendererSections,
+        });
       }
-      setTree(out);
+      setPages(result);
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => { load(); }, [id]);
 
-  const title = useMemo(() => landing?.seoTitle || landing?.name || "Preview", [landing]);
+  const isPublished = landing?.status === "PUBLISHED";
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-xl font-bold">Preview</div>
-          <div className="mt-1 text-sm text-slate-600">
-            Public endpoint ажиллавал тэрийг нь, үгүй бол дотоод бүтэц дээр render хийнэ.
+          <div className="text-xl font-bold text-slate-900">Preview</div>
+          <div className="mt-1 text-sm text-slate-500">
+            Сайт нийтлэгдсэний дараа яг ийм харагдана.
           </div>
         </div>
-        <div className="flex gap-2">
-          {landing ? (
-            <Button variant="secondary" onClick={() => window.open(`/public/${landing.slug}`, "_blank")}>
-              Public link
-            </Button>
-          ) : null}
-          <Button variant="ghost" onClick={load} disabled={busy}>Refresh</Button>
+        <div className="flex gap-2 shrink-0">
+          {isPublished && landing && (
+            <a
+              href={`/p/${landing.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 transition"
+            >
+              🚀 Нийтлэгдсэн сайт харах
+            </a>
+          )}
+          <Button variant="ghost" onClick={load} disabled={loading}>↺ Refresh</Button>
         </div>
       </div>
 
-      <Card className="p-6">
-        <div className="text-2xl font-extrabold tracking-tight">{title}</div>
-        {landing?.seoDescription ? <div className="mt-2 text-slate-600">{landing.seoDescription}</div> : null}
-      </Card>
+      {!isPublished && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          Энэ нь ноорог preview — нийтлэхийн тулд Dashboard дээр <strong>Нийтлэх</strong> дарна уу.
+        </div>
+      )}
 
-      {publicData ? (
-        <Card className="p-6">
-          <div className="text-sm font-semibold">Public render (/{publicData.slug})</div>
-          <div className="mt-6 space-y-10">
-            {publicData.pages
-              .slice()
-              .sort((a, b) => a.orderIndex - b.orderIndex)
-              .map((p) => (
-                <div key={p.id} className="space-y-4">
-                  <div className="text-lg font-bold">{p.title}</div>
-                  {p.sections
-                    .slice()
-                    .sort((a, b) => a.orderIndex - b.orderIndex)
-                    .map((s) => (
-                      <div key={s.id} className="rounded-2xl border border-slate-200 p-5 bg-white">
-                        <div className="text-sm font-semibold">{s.title || s.sectionKey}</div>
-                        <div className="mt-4 space-y-3">
-                          {s.components
-                            .slice()
-                            .sort((a, b) => a.orderIndex - b.orderIndex)
-                            .map((c) => (
-                              <div key={c.id}>{renderComponent(c.componentType, c.propsJson)}</div>
-                            ))}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              ))}
-          </div>
-        </Card>
-      ) : tree ? (
-        <Card className="p-6">
-          <div className="text-sm font-semibold">Internal render (draft OK)</div>
-          <div className="mt-6 space-y-10">
-            {tree.pages.map((pn) => (
-              <div key={pn.page.id} className="space-y-4">
-                <div className="text-lg font-bold">{pn.page.title}</div>
-                {pn.sections.map((sn) => (
-                  <div key={sn.section.id} className="rounded-2xl border border-slate-200 p-5 bg-white">
-                    <div className="text-sm font-semibold">{sn.section.title || sn.section.sectionKey}</div>
-                    <div className="mt-4 space-y-3">
-                      {sn.components.map((c) => (
-                        <div key={c.id}>{renderComponent(c.componentType, c.propsJson)}</div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </Card>
+      {loading ? (
+        <div className="rounded-2xl border border-slate-200 bg-white h-96 flex items-center justify-center text-sm text-slate-400">
+          Ачаалж байна…
+        </div>
+      ) : pages.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200 bg-white h-60 flex flex-col items-center justify-center gap-3 text-slate-400">
+          <div className="text-4xl">📄</div>
+          <div className="text-sm">Агуулга байхгүй байна.</div>
+          <Link
+            to={`/app/${id}/templates`}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Template сонгох →
+          </Link>
+        </div>
       ) : (
-        <Card className="p-6 text-slate-600">Ачаалж байна…</Card>
+        <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+          {/* Browser chrome mockup */}
+          <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <div className="h-3 w-3 rounded-full bg-rose-400" />
+              <div className="h-3 w-3 rounded-full bg-amber-400" />
+              <div className="h-3 w-3 rounded-full bg-green-400" />
+            </div>
+            <div className="flex-1 rounded-md bg-white border border-slate-200 px-3 py-1 text-xs text-slate-500 text-center truncate">
+              landing.mn/p/{landing?.slug}
+            </div>
+          </div>
+          {/* Actual render */}
+          <div className="max-h-[75vh] overflow-y-auto">
+            <LandingRenderer pages={pages} />
+          </div>
+        </div>
       )}
     </div>
   );

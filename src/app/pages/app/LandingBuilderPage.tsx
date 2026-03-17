@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Button, Card, EmptyState, Field, Input, Modal } from "../../../components/ui";
-import { pageService } from "../../../services/pageService";
-import type { PageResponse } from "../../../types/dto";
+import { Button, Card, EmptyState, Field, Input, Modal } from "../../components/ui";
+import { pageService } from "../../services/pageService";
+import type { PageResponse } from "../../types/dto";
 
 export default function LandingBuilderPage() {
   const { projectId } = useParams();
@@ -16,7 +16,10 @@ export default function LandingBuilderPage() {
   const [path, setPath] = useState("/");
   const [err, setErr] = useState<string | null>(null);
 
-  const sorted = useMemo(() => (pages ?? []).slice().sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)), [pages]);
+  const sorted = useMemo(
+    () => (pages ?? []).slice().sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)),
+    [pages]
+  );
 
   const load = async () => {
     setBusy(true);
@@ -41,41 +44,65 @@ export default function LandingBuilderPage() {
       });
       setCreateOpen(false);
       await load();
-    } catch (e: any) {
-      setErr(typeof e?.payload === "string" ? e.payload : "Page үүсгэхэд алдаа гарлаа.");
+    } catch (e: unknown) {
+      const error = e as { payload?: string };
+      setErr(typeof error?.payload === "string" ? error.payload : "Хуудас үүсгэхэд алдаа гарлаа.");
     } finally {
       setBusy(false);
     }
   };
 
-  const move = async (id: number, nextOrder: number) => {
+  const reorderAndRefresh = async (next: PageResponse[]) => {
+    await pageService.reorder(landingId, next.map((x) => x.id));
+    await load();
+  };
+
+  const moveUp = async (idx: number) => {
+    if (!pages || idx <= 0) return;
+    const next = sorted.slice();
+    [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
     setBusy(true);
-    try {
-      await pageService.reorder(landingId, { id, orderIndex: nextOrder });
-      await load();
-    } finally {
-      setBusy(false);
-    }
+    try { await reorderAndRefresh(next); }
+    finally { setBusy(false); }
+  };
+
+  const moveDown = async (idx: number) => {
+    if (!pages || idx >= sorted.length - 1) return;
+    const next = sorted.slice();
+    [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
+    setBusy(true);
+    try { await reorderAndRefresh(next); }
+    finally { setBusy(false); }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className="text-xl font-bold">Pages</div>
-          <div className="mt-1 text-sm text-slate-600">Landing-ийн хуудсуудын жагсаалт. (path: /, /about …)</div>
+          <div className="text-xl font-bold">Хуудсууд</div>
+          <div className="mt-1 text-sm text-slate-600">
+            Landing-ийн хуудсуудын жагсаалт. (path: /, /about …)
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setCreateOpen(true)}>Page нэмэх</Button>
-          <Button variant="ghost" onClick={load} disabled={busy}>Refresh</Button>
+          <Button variant="secondary" onClick={() => setCreateOpen(true)}>
+            + Хуудас нэмэх
+          </Button>
+          <Button variant="ghost" onClick={load} disabled={busy}>
+            Refresh
+          </Button>
         </div>
       </div>
 
       {!pages || pages.length === 0 ? (
         <EmptyState
-          title="Page байхгүй байна"
+          title="Хуудас байхгүй байна"
           desc="Эхний хуудсаа үүсгээд Builder руу орно."
-          action={<Button onClick={() => setCreateOpen(true)}>Page үүсгэх</Button>}
+          action={
+            <Button onClick={() => setCreateOpen(true)}>
+              Хуудас үүсгэх
+            </Button>
+          }
         />
       ) : (
         <div className="grid gap-3">
@@ -84,14 +111,14 @@ export default function LandingBuilderPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="font-semibold">{p.title}</div>
-                  <div className="text-sm text-slate-600">{p.path}</div>
+                  <div className="text-sm text-slate-500 font-mono">{p.path}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
                     variant="secondary"
                     disabled={busy || idx === 0}
-                    onClick={() => move(p.id, p.orderIndex - 1)}
+                    onClick={() => moveUp(idx)}
                   >
                     ↑
                   </Button>
@@ -99,7 +126,7 @@ export default function LandingBuilderPage() {
                     size="sm"
                     variant="secondary"
                     disabled={busy || idx === sorted.length - 1}
-                    onClick={() => move(p.id, p.orderIndex + 1)}
+                    onClick={() => moveDown(idx)}
                   >
                     ↓
                   </Button>
@@ -108,7 +135,7 @@ export default function LandingBuilderPage() {
                     variant="danger"
                     disabled={busy}
                     onClick={async () => {
-                      if (!confirm("Page устгах уу?")) return;
+                      if (!confirm("Хуудсыг устгах уу?")) return;
                       await pageService.remove(p.id);
                       await load();
                     }}
@@ -124,23 +151,31 @@ export default function LandingBuilderPage() {
 
       <Modal
         open={createOpen}
-        title="Шинэ Page"
+        title="Шинэ хуудас үүсгэх"
         onClose={() => setCreateOpen(false)}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setCreateOpen(false)}>Болих</Button>
-            <Button onClick={onCreate} loading={busy}>Үүсгэх</Button>
+            <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+              Болих
+            </Button>
+            <Button onClick={onCreate} disabled={busy}>
+              Үүсгэх
+            </Button>
           </div>
         }
       >
         <div className="space-y-4">
-          <Field label="Title">
+          <Field label="Гарчиг">
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </Field>
-          <Field label="Path" hint="Ж: / эсвэл /about">
+          <Field label="Path" hint="Жишээ: / эсвэл /about">
             <Input value={path} onChange={(e) => setPath(e.target.value)} />
           </Field>
-          {err ? <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{err}</div> : null}
+          {err && (
+            <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">
+              {err}
+            </div>
+          )}
         </div>
       </Modal>
     </div>

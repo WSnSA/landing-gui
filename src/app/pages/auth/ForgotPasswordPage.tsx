@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, Field, Input } from "../../../components/ui";
-import {authService} from "../../../services/authService";
-import {ApiError} from "../../../services/apiClient";
+import { Button, Card, Field, Input } from "../../components/ui";
+import { authService } from "../../services/authService";
+import type { ApiError } from "../../services/apiClient";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -10,7 +10,6 @@ export default function ForgotPasswordPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  // @ts-ignore
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button, Card } from "../../../components/ui";
+import { Button, Card } from "../../components/ui";
 
 const items = [
   { to: "/examples/free", name: "Free template", desc: "Minimal нэг хуудас" },

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Button, Card, Field, Input } from "../../../components/ui";
-import { authService } from "../../../services/authService";
-import type { ApiError } from "../../../services/apiClient";
+import { Button, Card, Field, Input } from "../../components/ui";
+import { authService } from "../../services/authService";
+import type { ApiError } from "../../services/apiClient";
 
 export default function ResetPasswordPage() {
   const [sp] = useSearchParams();

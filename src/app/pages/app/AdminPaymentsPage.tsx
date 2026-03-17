@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Button, Card } from "../../../components/ui";
-import { paymentService } from "../../../services/paymentService";
-import type { PaymentSummaryResponse } from "../../../types/dto";
-import { formatDateTime } from "../../../utils/format";
+import { Button, Card } from "../../components/ui";
+import { paymentService } from "../../services/paymentService";
+import type { PaymentSummaryResponse } from "../../types/dto";
+import { formatDateTime } from "../../utils/format";
 
 export default function AdminPaymentsPage() {
   const [items, setItems] = useState<PaymentSummaryResponse[]>([]);

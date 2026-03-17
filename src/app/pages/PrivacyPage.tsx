@@ -1,23 +1,35 @@
-import { Link } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import PublicNav from "../components/PublicNav";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <div className="text-lg font-semibold">Нууцлал</div>
-          <Link to="/"><Button variant="ghost">Нүүр</Button></Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white">
+      <PublicNav />
 
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <Card className="p-8 prose max-w-none">
-          <h2>Мэдээлэл цуглуулах</h2>
-          <p>Энэ бол UX placeholder. Хэрэглэгчийн мэдээлэл, cookie, analytics талаар энд бичнэ.</p>
-          <h2>Хадгалалт</h2>
-          <p>Сервер дээр хадгалагдах өгөгдөл, лог, хамгаалалтын бодлого.</p>
-        </Card>
+      <main className="mx-auto max-w-3xl px-6 py-16">
+        <h1 className="text-3xl font-black text-slate-900 mb-2">Нууцлалын бодлого</h1>
+        <p className="text-sm text-slate-400 mb-10">Сүүлд шинэчлэгдсэн: 2026 оны 1-р сарын 1</p>
+
+        <div className="space-y-8 text-slate-600 leading-relaxed">
+          <section>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">1. Мэдээлэл цуглуулах</h2>
+            <p>Бид таны бүртгэлийн мэдээлэл (нэр, имэйл, утас), хэрэглээний лог, cookie зэргийг цуглуулна. Энэ мэдээллийг зөвхөн үйлчилгээгээ сайжруулах зорилгоор ашиглана.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">2. Мэдээлэл хадгалах</h2>
+            <p>Таны өгөгдлийг SSL шифрлэлтээр хамгаалагдсан серверт хадгална. Гуравдагч этгээдэд хуваалцахгүй.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">3. Cookie</h2>
+            <p>Нэвтрэлтийн мэдээллийг хадгалахад cookie ашиглана. Хөтчийн тохиргооноос cookie-г идэвхгүй болгох боломжтой.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">4. Холбоо барих</h2>
+            <p>Нууцлалтай холбоотой асуулт байвал <a href="mailto:info@landing.mn" className="text-blue-600 hover:underline">info@landing.mn</a>-д илгээнэ үү.</p>
+          </section>
+        </div>
       </main>
     </div>
   );

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button, Card } from "../../../components/ui";
+import { Button, Card } from "../../components/ui";
 
 export default function FreeTemplateExample() {
   return (
