@@ -16,6 +16,9 @@ import type { HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConf
 import FutureAnimatedPage from "../../templates/future/FutureAnimatedPage";
 import { DEFAULT_FUTURE_CONFIG } from "../../templates/future/FutureConfig";
 import type { FutureConfig } from "../../templates/future/FutureConfig";
+import KShopAnimatedPage from "../../templates/kshop/KShopAnimatedPage";
+import { DEFAULT_KSHOP_CONFIG } from "../../templates/kshop/KShopConfig";
+import type { KShopConfig } from "../../templates/kshop/KShopConfig";
 
 const TYPES: { value: string; label: string }[] = [
   { value: "all",            label: "Бүгд" },
@@ -58,12 +61,16 @@ function AnimatedTemplatePreview({ schemaJson }: { schemaJson: string | null }) 
     const config = { ...DEFAULT_FUTURE_CONFIG, ...(cfg ?? {}) } as FutureConfig;
     return <FutureAnimatedPage config={config} />;
   }
+  if (type === "online_shop") {
+    const config = { ...DEFAULT_KSHOP_CONFIG, ...(cfg ?? {}) } as KShopConfig;
+    return <KShopAnimatedPage config={config} />;
+  }
   return null;
 }
 
 function isAnimatedTemplate(schemaJson: string | null): boolean {
   const schema = safeJsonParse<Record<string, unknown>>(schemaJson, {});
-  return ["animated_cafe", "driving_center", "education_center"].includes(schema.__templateType as string);
+  return ["animated_cafe", "driving_center", "education_center", "online_shop"].includes(schema.__templateType as string);
 }
 
 export default function MarketplacePage() {

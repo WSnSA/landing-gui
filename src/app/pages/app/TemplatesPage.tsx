@@ -166,6 +166,55 @@ function FutureMiniPreview() {
   );
 }
 
+function KShopMiniPreview() {
+  return (
+    <div className="w-full h-40 bg-pink-50 overflow-hidden relative flex flex-col">
+      {/* Promo strip */}
+      <div className="bg-pink-500 py-1 px-4 flex items-center justify-center shrink-0">
+        <div className="h-1.5 w-32 bg-white/60 rounded-full" />
+      </div>
+      {/* Nav */}
+      <div className="bg-white border-b border-pink-100 px-4 py-1.5 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-1.5">
+          <div className="h-4 w-4 rounded-full bg-pink-400" />
+          <div className="h-2 w-14 bg-slate-200 rounded-full" />
+        </div>
+        <div className="h-4 w-12 rounded-lg bg-pink-500" />
+      </div>
+      {/* Hero + product grid */}
+      <div className="flex-1 flex items-center px-3 gap-3">
+        <div className="flex-1 space-y-1">
+          <div className="h-1.5 w-8 bg-pink-200 rounded-full" />
+          <div className="h-2.5 w-20 bg-slate-800 rounded-full" />
+          <div className="h-2.5 w-16 bg-pink-500 rounded-full" />
+          <div className="h-4 w-14 rounded-lg bg-pink-500 mt-1.5" />
+        </div>
+        {/* Mini product grid */}
+        <div className="grid grid-cols-2 gap-1 shrink-0">
+          {["🧥","👗","👖","👟"].map((e, i) => (
+            <div key={i} className="w-10 h-10 rounded-lg bg-white border border-pink-100 flex items-center justify-center text-base shadow-sm">
+              {e}
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Categories strip */}
+      <div className="px-3 pb-2 flex gap-1.5">
+        {["👗","👔","👧","👟"].map((e, i) => (
+          <div key={i} className="h-5 px-1.5 rounded-full bg-white border border-pink-200 flex items-center gap-0.5">
+            <span className="text-[9px]">{e}</span>
+            <div className="h-1.5 w-4 bg-slate-200 rounded-full" />
+          </div>
+        ))}
+      </div>
+      {/* Label */}
+      <div className="absolute bottom-1.5 right-3 text-[9px] font-bold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded-full border border-pink-200">
+        Light · Shop
+      </div>
+    </div>
+  );
+}
+
 function TemplateMiniPreview({ template }: { template: TemplateResponse }) {
   if (template.previewImageUrl) {
     return (
@@ -183,6 +232,7 @@ function TemplateMiniPreview({ template }: { template: TemplateResponse }) {
   if (templateType === "animated_cafe") return <CafeMiniPreview />;
   if (templateType === "driving_center") return <HyperdriveMiniPreview />;
   if (templateType === "education_center") return <FutureMiniPreview />;
+  if (templateType === "online_shop") return <KShopMiniPreview />;
 
   // Generic fallback
   const emoji = template.type === "restaurant" ? "🍽️"

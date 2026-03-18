@@ -6,7 +6,13 @@
       "Bash(npm run:*)",
       "Bash(node -e \":*)",
       "Bash(docker build:*)",
-      "Bash(find D:/Projects/back/Modernminimalsaaslandingpage/.github -name *.yml)"
+      "Bash(find D:/Projects/back/Modernminimalsaaslandingpage/.github -name *.yml)",
+      "Bash(find D:/Projects/back/landing-service/.github -name *.yml)",
+      "WebFetch(domain:www.facebook.com)",
+      "WebFetch(domain:hyperdrive.mn)",
+      "WebFetch(domain:www.google.com)",
+      "WebSearch",
+      "WebFetch(domain:www.trip.com)"
     ]
   }
 }

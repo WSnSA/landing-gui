@@ -12,6 +12,9 @@ import type { HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConf
 import FutureAnimatedPage from "../../templates/future/FutureAnimatedPage";
 import { DEFAULT_FUTURE_CONFIG } from "../../templates/future/FutureConfig";
 import type { FutureConfig } from "../../templates/future/FutureConfig";
+import KShopAnimatedPage from "../../templates/kshop/KShopAnimatedPage";
+import { DEFAULT_KSHOP_CONFIG } from "../../templates/kshop/KShopConfig";
+import type { KShopConfig } from "../../templates/kshop/KShopConfig";
 
 // ── Component render ─────────────────────────────────────────────────────────
 
@@ -278,6 +281,7 @@ export default function PublicRenderPage() {
   const isAnimatedCafe = configObj.__type === "animated_cafe";
   const isDrivingCenter = configObj.__type === "driving_center";
   const isEducationCenter = configObj.__type === "education_center";
+  const isOnlineShop = configObj.__type === "online_shop";
 
   // SEO meta + favicon
   useEffect(() => {
@@ -287,7 +291,7 @@ export default function PublicRenderPage() {
     if (meta && data.seoDescription) meta.content = data.seoDescription;
 
     // Favicon: animated template-д brandLogo ашиглана
-    const logoUrl = (isAnimatedCafe || isDrivingCenter || isEducationCenter) ? (configObj.brandLogo as string | undefined) : null;
+    const logoUrl = (isAnimatedCafe || isDrivingCenter || isEducationCenter || isOnlineShop) ? (configObj.brandLogo as string | undefined) : null;
     if (logoUrl) {
       let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
       if (!link) {
@@ -297,7 +301,7 @@ export default function PublicRenderPage() {
       }
       link.href = logoUrl;
     }
-  }, [data, isAnimatedCafe, isDrivingCenter, isEducationCenter, configObj.brandLogo]);
+  }, [data, isAnimatedCafe, isDrivingCenter, isEducationCenter, isOnlineShop, configObj.brandLogo]);
 
   if (error) {
     return (
@@ -332,6 +336,11 @@ export default function PublicRenderPage() {
   if (isEducationCenter) {
     const ftConfig: FutureConfig = { ...DEFAULT_FUTURE_CONFIG, ...configObj } as FutureConfig;
     return <FutureAnimatedPage config={ftConfig} />;
+  }
+
+  if (isOnlineShop) {
+    const ksConfig: KShopConfig = { ...DEFAULT_KSHOP_CONFIG, ...configObj } as KShopConfig;
+    return <KShopAnimatedPage config={ksConfig} />;
   }
 
   // Эхний page-г render хийнэ (multi-page дараа нэмж болно)

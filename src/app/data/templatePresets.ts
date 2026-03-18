@@ -2,6 +2,7 @@ import type { TemplateRequest } from "../types/dto";
 import { DEFAULT_CAFE_CONFIG } from "../templates/cafe/CafeConfig";
 import { DEFAULT_HYPERDRIVE_CONFIG } from "../templates/hyperdrive/HyperdriveConfig";
 import { DEFAULT_FUTURE_CONFIG } from "../templates/future/FutureConfig";
+import { DEFAULT_KSHOP_CONFIG } from "../templates/kshop/KShopConfig";
 
 export const TEMPLATE_PRESETS: Record<string, TemplateRequest> = {
   cafe: {
@@ -32,6 +33,16 @@ export const TEMPLATE_PRESETS: Record<string, TemplateRequest> = {
     schemaJson: JSON.stringify({
       __templateType: "education_center",
       defaultConfig: DEFAULT_FUTURE_CONFIG,
+    }, null, 2),
+  },
+  kshop: {
+    name: "Korean Shop — Онлайн дэлгүүр",
+    type: "product",
+    description: "Солонгос загварын хувцасны дэлгүүрт зориулсан template. Ангиллал, бараа жагсаалт, захиалах заавар, сэтгэгдэл, Facebook/Instagram/Утас CTA — онлайн шоп бизнест тохиромжтой.",
+    previewImageUrl: null,
+    schemaJson: JSON.stringify({
+      __templateType: "online_shop",
+      defaultConfig: DEFAULT_KSHOP_CONFIG,
     }, null, 2),
   },
 };

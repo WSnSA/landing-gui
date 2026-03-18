@@ -18,6 +18,9 @@ import HyperdriveEditorPanel from "../../templates/hyperdrive/HyperdriveEditorPa
 import { DEFAULT_FUTURE_CONFIG } from "../../templates/future/FutureConfig";
 import type { FutureConfig } from "../../templates/future/FutureConfig";
 import FutureEditorPanel from "../../templates/future/FutureEditorPanel";
+import { DEFAULT_KSHOP_CONFIG } from "../../templates/kshop/KShopConfig";
+import type { KShopConfig } from "../../templates/kshop/KShopConfig";
+import KShopEditorPanel from "../../templates/kshop/KShopEditorPanel";
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Үндсэн хэсэг", features: "Давуу талууд", about: "Бидний тухай",
@@ -217,6 +220,8 @@ export default function ContentEditorPage() {
   const [hyperdriveSaving, setHyperdriveSaving] = useState(false);
   const [futureConfig, setFutureConfig] = useState<FutureConfig | null>(null);
   const [futureSaving, setFutureSaving] = useState(false);
+  const [kshopConfig, setKshopConfig] = useState<KShopConfig | null>(null);
+  const [kshopSaving, setKshopSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -235,6 +240,10 @@ export default function ContentEditorPage() {
       }
       if (cfg.__type === "education_center") {
         setFutureConfig({ ...DEFAULT_FUTURE_CONFIG, ...cfg } as FutureConfig);
+        return;
+      }
+      if (cfg.__type === "online_shop") {
+        setKshopConfig({ ...DEFAULT_KSHOP_CONFIG, ...cfg } as KShopConfig);
         return;
       }
 
@@ -282,6 +291,16 @@ export default function ContentEditorPage() {
       await landingService.update(landingId, { configJson: JSON.stringify(futureConfig) });
     } finally {
       setFutureSaving(false);
+    }
+  };
+
+  const saveKshopConfig = async () => {
+    if (!kshopConfig) return;
+    setKshopSaving(true);
+    try {
+      await landingService.update(landingId, { configJson: JSON.stringify(kshopConfig) });
+    } finally {
+      setKshopSaving(false);
     }
   };
 
@@ -334,6 +353,19 @@ export default function ContentEditorPage() {
           onChange={setFutureConfig}
           saving={futureSaving}
           onSave={saveFutureConfig}
+        />
+      </div>
+    );
+  }
+
+  if (kshopConfig) {
+    return (
+      <div className="h-[calc(100vh-112px)] -mx-6 -my-8">
+        <KShopEditorPanel
+          config={kshopConfig}
+          onChange={setKshopConfig}
+          saving={kshopSaving}
+          onSave={saveKshopConfig}
         />
       </div>
     );

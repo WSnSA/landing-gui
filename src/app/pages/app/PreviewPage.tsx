@@ -14,6 +14,8 @@ import HyperdriveAnimatedPage from "../../templates/hyperdrive/HyperdriveAnimate
 import { DEFAULT_HYPERDRIVE_CONFIG, type HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
 import FutureAnimatedPage from "../../templates/future/FutureAnimatedPage";
 import { DEFAULT_FUTURE_CONFIG, type FutureConfig } from "../../templates/future/FutureConfig";
+import KShopAnimatedPage from "../../templates/kshop/KShopAnimatedPage";
+import { DEFAULT_KSHOP_CONFIG, type KShopConfig } from "../../templates/kshop/KShopConfig";
 
 export default function PreviewPage() {
   const { projectId } = useParams();
@@ -24,6 +26,7 @@ export default function PreviewPage() {
   const [cafeConfig, setCafeConfig] = useState<CafeConfig | null>(null);
   const [hyperdriveConfig, setHyperdriveConfig] = useState<HyperdriveConfig | null>(null);
   const [futureConfig, setFutureConfig] = useState<FutureConfig | null>(null);
+  const [kshopConfig, setKshopConfig] = useState<KShopConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -31,6 +34,7 @@ export default function PreviewPage() {
     setCafeConfig(null);
     setHyperdriveConfig(null);
     setFutureConfig(null);
+    setKshopConfig(null);
     try {
       const l = await landingService.get(id);
       setLanding(l);
@@ -47,6 +51,10 @@ export default function PreviewPage() {
       }
       if (cfg.__type === "education_center") {
         setFutureConfig({ ...DEFAULT_FUTURE_CONFIG, ...cfg } as FutureConfig);
+        return;
+      }
+      if (cfg.__type === "online_shop") {
+        setKshopConfig({ ...DEFAULT_KSHOP_CONFIG, ...cfg } as KShopConfig);
         return;
       }
 
@@ -155,6 +163,22 @@ export default function PreviewPage() {
           </div>
           <div className="max-h-[75vh] overflow-y-auto">
             <FutureAnimatedPage config={futureConfig} />
+          </div>
+        </div>
+      ) : kshopConfig ? (
+        <div className="rounded-2xl border border-pink-200 overflow-hidden bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <div className="h-3 w-3 rounded-full bg-rose-400" />
+              <div className="h-3 w-3 rounded-full bg-amber-400" />
+              <div className="h-3 w-3 rounded-full bg-green-400" />
+            </div>
+            <div className="flex-1 rounded-md bg-white border border-slate-200 px-3 py-1 text-xs text-slate-500 text-center truncate">
+              landing.mn/p/{landing?.slug}
+            </div>
+          </div>
+          <div className="max-h-[75vh] overflow-y-auto">
+            <KShopAnimatedPage config={kshopConfig} />
           </div>
         </div>
       ) : hyperdriveConfig ? (
