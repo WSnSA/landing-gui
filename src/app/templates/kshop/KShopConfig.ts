@@ -5,6 +5,7 @@ export interface KShopProduct {
   tag?: string;       // "Шинэ", "Sale", "Онцлох"
   category: string;
   emoji: string;      // placeholder дүрс (зураг байхгүй үед)
+  images?: string[];  // base64 эсвэл URL — хамгийн ихдээ 3 зураг
 }
 
 export interface KShopCategory {

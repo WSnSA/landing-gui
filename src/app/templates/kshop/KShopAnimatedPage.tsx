@@ -34,15 +34,24 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
 
 // ── Product card ──────────────────────────────────────────────────────────────
 
-function ProductCard({ product, theme, index }: {
+function ProductCard({ product, theme, index, facebook }: {
   product: KShopConfig["products"][0];
   theme: ReturnType<typeof KSHOP_THEMES[keyof typeof KSHOP_THEMES]>;
   index: number;
+  facebook: string;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [imgIdx, setImgIdx] = useState(0);
+  const images = product.images?.filter(Boolean) ?? [];
+  const hasImages = images.length > 0;
   const tagCls = product.tag === "Sale" ? theme.tagSale
     : product.tag === "Онцлох" ? "bg-amber-500 text-white"
     : theme.tagNew;
+
+  const orderMsg = encodeURIComponent(
+    `Сайн байна уу! 👋\n"${product.name}" захиалмаар байна.\nҮнэ: ${product.price}${product.originalPrice ? ` (хуучин: ${product.originalPrice})` : ""}\n\n${typeof window !== "undefined" ? window.location.href : ""}`
+  );
+  const messengerUrl = facebook ? `https://m.me/${facebook}?text=${orderMsg}` : `#contact`;
 
   return (
     <FadeIn delay={index * 0.05}>
@@ -53,10 +62,33 @@ function ProductCard({ product, theme, index }: {
       >
         {/* Image area */}
         <div className={`relative h-52 ${theme.accentBg} flex items-center justify-center overflow-hidden`}>
-          <motion.div animate={{ scale: hovered ? 1.08 : 1 }} transition={{ duration: 0.3 }}
-            className="text-7xl select-none">
-            {product.emoji}
-          </motion.div>
+          {hasImages ? (
+            <>
+              <motion.img
+                key={imgIdx}
+                src={images[imgIdx]}
+                alt={product.name}
+                animate={{ scale: hovered ? 1.06 : 1 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              {/* Image dots */}
+              {images.length > 1 && (
+                <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-1 z-10">
+                  {images.map((_, di) => (
+                    <button key={di} onClick={(e) => { e.stopPropagation(); setImgIdx(di); }}
+                      className={`h-1.5 rounded-full transition-all ${di === imgIdx ? "w-4 bg-white" : "w-1.5 bg-white/60"}`} />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <motion.div animate={{ scale: hovered ? 1.08 : 1 }} transition={{ duration: 0.3 }}
+              className="text-7xl select-none">
+              {product.emoji}
+            </motion.div>
+          )}
 
           {/* Tag */}
           {product.tag && (
@@ -72,9 +104,10 @@ function ProductCard({ product, theme, index }: {
             transition={{ duration: 0.2 }}
             className="absolute bottom-3 left-3 right-3"
           >
-            <div className={`flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${theme.accentGradient} py-2.5 text-xs font-bold text-white shadow-lg`}>
+            <a href={messengerUrl} target="_blank" rel="noopener noreferrer"
+              className={`flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${theme.accentGradient} py-2.5 text-xs font-bold text-white shadow-lg`}>
               <ShoppingBag size={13} /> Захиалах
-            </div>
+            </a>
           </motion.div>
         </div>
 
@@ -98,6 +131,11 @@ function ProductCard({ product, theme, index }: {
 
 export default function KShopAnimatedPage({ config }: { config: KShopConfig }) {
   const theme = KSHOP_THEMES[config.primaryColor];
+  const [activeCategory, setActiveCategory] = useState<string>("Бүгд");
+
+  const filteredProducts = activeCategory === "Бүгд"
+    ? config.products
+    : config.products.filter((p) => p.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
@@ -183,13 +221,23 @@ export default function KShopAnimatedPage({ config }: { config: KShopConfig }) {
                   <div className="text-2xl font-black leading-tight mb-3">{config.promoText}</div>
                   <div className="text-sm opacity-80 mb-6">{config.promoSub}</div>
                   <div className="grid grid-cols-3 gap-2">
-                    {config.products.slice(0, 3).map((p, i) => (
-                      <div key={i} className="rounded-xl bg-white/20 backdrop-blur-sm p-3 text-center">
-                        <div className="text-2xl mb-1">{p.emoji}</div>
-                        <div className="text-[10px] font-bold leading-tight">{p.name.split(" ")[0]}</div>
-                        <div className="text-xs font-black mt-1">{p.price}</div>
-                      </div>
-                    ))}
+                    {config.products.slice(0, 3).map((p, i) => {
+                      const heroImg = p.images?.find(Boolean);
+                      return (
+                        <div key={i} className="rounded-xl bg-white/20 backdrop-blur-sm overflow-hidden text-center">
+                          {heroImg ? (
+                            <img src={heroImg} alt={p.name} className="w-full h-14 object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                          ) : (
+                            <div className="text-2xl py-2">{p.emoji}</div>
+                          )}
+                          <div className="px-2 pb-2">
+                            <div className="text-[10px] font-bold leading-tight">{p.name.split(" ")[0]}</div>
+                            <div className="text-xs font-black mt-0.5">{p.price}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -217,16 +265,28 @@ export default function KShopAnimatedPage({ config }: { config: KShopConfig }) {
         </div>
       </section>
 
-      {/* ── CATEGORIES ── */}
-      <section className="py-10 bg-white border-b border-slate-100">
+      {/* ── CATEGORIES FILTER ── */}
+      <section className="py-6 bg-white border-b border-slate-100">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {/* "Бүгд" button */}
+            <button onClick={() => setActiveCategory("Бүгд")}
+              className={`flex items-center gap-2 shrink-0 rounded-2xl border-2 px-5 py-2.5 text-sm font-semibold transition-all whitespace-nowrap ${
+                activeCategory === "Бүгд"
+                  ? `${theme.accent} border-transparent text-white shadow-md`
+                  : `border-slate-200 text-slate-600 hover:border-slate-300 bg-white`
+              }`}>
+              🛍️ Бүгд
+            </button>
             {config.categories.map((cat, i) => (
-              <button key={i}
-                className={`flex items-center gap-2 shrink-0 rounded-2xl border-2 ${theme.accentBorder} ${theme.accentBg} px-5 py-2.5 text-sm font-semibold ${theme.accentText} hover:shadow-md transition-all whitespace-nowrap`}>
+              <button key={i} onClick={() => setActiveCategory(cat.name)}
+                className={`flex items-center gap-2 shrink-0 rounded-2xl border-2 px-5 py-2.5 text-sm font-semibold transition-all whitespace-nowrap ${
+                  activeCategory === cat.name
+                    ? `${theme.accent} border-transparent text-white shadow-md`
+                    : `border-slate-200 ${theme.accentBg} ${theme.accentText} hover:shadow-md`
+                }`}>
                 <span className="text-base">{cat.icon}</span>
                 {cat.name}
-                <ChevronRight size={13} className="opacity-60" />
               </button>
             ))}
           </div>
@@ -246,11 +306,17 @@ export default function KShopAnimatedPage({ config }: { config: KShopConfig }) {
             </a>
           </FadeIn>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {config.products.map((p, i) => (
-              <ProductCard key={i} product={p} theme={theme} index={i} />
-            ))}
-          </div>
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-20 text-slate-400 text-sm">
+              Энэ ангиллалд бараа байхгүй байна
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredProducts.map((p, i) => (
+                <ProductCard key={`${activeCategory}-${i}`} product={p} theme={theme} index={i} facebook={config.facebook} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

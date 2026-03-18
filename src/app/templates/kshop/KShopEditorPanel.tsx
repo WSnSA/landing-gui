@@ -82,6 +82,25 @@ export default function KShopEditorPanel({
 
   const setProduct = (i: number, field: keyof KShopProduct, val: string) =>
     set("products", config.products.map((p, idx) => idx === i ? { ...p, [field]: val } : p));
+
+  const uploadProductImage = (i: number, slot: number, file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 1024 * 1024) return; // 1MB max
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const current = config.products[i].images ?? [];
+      const updated = [...current];
+      updated[slot] = String(e.target?.result ?? "");
+      set("products", config.products.map((p, idx) => idx === i ? { ...p, images: updated } : p));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeProductImage = (i: number, slot: number) => {
+    const current = config.products[i].images ?? [];
+    const updated = current.filter((_, si) => si !== slot);
+    set("products", config.products.map((p, idx) => idx === i ? { ...p, images: updated } : p));
+  };
   const addProduct = () =>
     set("products", [...config.products, { name: "Шинэ бараа", price: "0₮", originalPrice: "", tag: "Шинэ", category: "Бусад", emoji: "🛍️" }]);
   const removeProduct = (i: number) => set("products", config.products.filter((_, idx) => idx !== i));
@@ -194,9 +213,43 @@ export default function KShopEditorPanel({
                       <span className="text-xs font-semibold text-slate-500">#{i + 1}</span>
                       <button onClick={() => removeProduct(i)} className="text-xs text-rose-400 hover:text-rose-600">✕</button>
                     </div>
-                    <div className="flex gap-2">
-                      <Input value={p.emoji} onChange={(e) => setProduct(i, "emoji", e.target.value)} placeholder="👗" className="w-14 shrink-0 text-center text-xl" />
-                      <Input value={p.name} onChange={(e) => setProduct(i, "name", e.target.value)} placeholder="Нэр" className="flex-1" />
+                    {/* Product name */}
+                    <div className="flex gap-2 items-center">
+                      <Input value={p.emoji} onChange={(e) => setProduct(i, "emoji", e.target.value)} placeholder="👗" className="w-12 shrink-0 text-center text-xl" />
+                      <Input value={p.name} onChange={(e) => setProduct(i, "name", e.target.value)} placeholder="Барааны нэр" className="flex-1" />
+                    </div>
+                    {/* 3-slot image upload */}
+                    <div>
+                      <div className="text-[10px] font-semibold text-slate-400 mb-1.5">Зургууд (хамгийн ихдээ 3)</div>
+                      <div className="flex gap-2">
+                        {[0, 1, 2].map((slot) => {
+                          const imgSrc = p.images?.[slot];
+                          return (
+                            <div key={slot} className="relative">
+                              <label className="cursor-pointer block">
+                                <div className="h-16 w-16 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 overflow-hidden flex items-center justify-center transition">
+                                  {imgSrc ? (
+                                    <img src={imgSrc} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="flex flex-col items-center gap-0.5 text-slate-300">
+                                      <Upload size={12} />
+                                      <span className="text-[9px]">{slot + 1}-р</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <input type="file" accept="image/*" className="hidden"
+                                  onChange={(e) => e.target.files?.[0] && uploadProductImage(i, slot, e.target.files[0])} />
+                              </label>
+                              {imgSrc && (
+                                <button onClick={() => removeProductImage(i, slot)}
+                                  className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-rose-500 text-white flex items-center justify-center hover:bg-rose-600 transition z-10">
+                                  <X size={8} />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                       <Input value={p.price} onChange={(e) => setProduct(i, "price", e.target.value)} placeholder="0₮" />
