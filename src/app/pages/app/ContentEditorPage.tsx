@@ -15,6 +15,9 @@ import CafeEditorPanel from "../../templates/cafe/CafeEditorPanel";
 import { DEFAULT_HYPERDRIVE_CONFIG } from "../../templates/hyperdrive/HyperdriveConfig";
 import type { HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
 import HyperdriveEditorPanel from "../../templates/hyperdrive/HyperdriveEditorPanel";
+import { DEFAULT_FUTURE_CONFIG } from "../../templates/future/FutureConfig";
+import type { FutureConfig } from "../../templates/future/FutureConfig";
+import FutureEditorPanel from "../../templates/future/FutureEditorPanel";
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Үндсэн хэсэг", features: "Давуу талууд", about: "Бидний тухай",
@@ -212,6 +215,8 @@ export default function ContentEditorPage() {
   const [cafeSaving, setCafeSaving] = useState(false);
   const [hyperdriveConfig, setHyperdriveConfig] = useState<HyperdriveConfig | null>(null);
   const [hyperdriveSaving, setHyperdriveSaving] = useState(false);
+  const [futureConfig, setFutureConfig] = useState<FutureConfig | null>(null);
+  const [futureSaving, setFutureSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -226,6 +231,10 @@ export default function ContentEditorPage() {
       }
       if (cfg.__type === "driving_center") {
         setHyperdriveConfig({ ...DEFAULT_HYPERDRIVE_CONFIG, ...cfg } as HyperdriveConfig);
+        return;
+      }
+      if (cfg.__type === "education_center") {
+        setFutureConfig({ ...DEFAULT_FUTURE_CONFIG, ...cfg } as FutureConfig);
         return;
       }
 
@@ -266,6 +275,16 @@ export default function ContentEditorPage() {
     }
   };
 
+  const saveFutureConfig = async () => {
+    if (!futureConfig) return;
+    setFutureSaving(true);
+    try {
+      await landingService.update(landingId, { configJson: JSON.stringify(futureConfig) });
+    } finally {
+      setFutureSaving(false);
+    }
+  };
+
   const saveComponent = async (comp: ComponentResponse, propsJson: string) => {
     await componentService.update(comp.id, { componentType: comp.componentType, propsJson, orderIndex: comp.orderIndex });
     setSections((prev) =>
@@ -302,6 +321,19 @@ export default function ContentEditorPage() {
           onChange={setHyperdriveConfig}
           saving={hyperdriveSaving}
           onSave={saveHyperdriveConfig}
+        />
+      </div>
+    );
+  }
+
+  if (futureConfig) {
+    return (
+      <div className="h-[calc(100vh-112px)] -mx-6 -my-8">
+        <FutureEditorPanel
+          config={futureConfig}
+          onChange={setFutureConfig}
+          saving={futureSaving}
+          onSave={saveFutureConfig}
         />
       </div>
     );

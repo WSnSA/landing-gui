@@ -1,6 +1,7 @@
 import type { TemplateRequest } from "../types/dto";
 import { DEFAULT_CAFE_CONFIG } from "../templates/cafe/CafeConfig";
 import { DEFAULT_HYPERDRIVE_CONFIG } from "../templates/hyperdrive/HyperdriveConfig";
+import { DEFAULT_FUTURE_CONFIG } from "../templates/future/FutureConfig";
 
 export const TEMPLATE_PRESETS: Record<string, TemplateRequest> = {
   cafe: {
@@ -21,6 +22,16 @@ export const TEMPLATE_PRESETS: Record<string, TemplateRequest> = {
     schemaJson: JSON.stringify({
       __templateType: "driving_center",
       defaultConfig: DEFAULT_HYPERDRIVE_CONFIG,
+    }, null, 2),
+  },
+  future: {
+    name: "Future — Боловсролын төв",
+    type: "course",
+    description: "Цагаан дэвсгэртэй, gradient accent бүхий EdTech template. Хөтөлбөрүүд, элсэх алхамууд, статистик, багш нар, сэтгэгдэл — онлайн болон офлайн сургалтын төвд тохиромжтой.",
+    previewImageUrl: null,
+    schemaJson: JSON.stringify({
+      __templateType: "education_center",
+      defaultConfig: DEFAULT_FUTURE_CONFIG,
     }, null, 2),
   },
 };

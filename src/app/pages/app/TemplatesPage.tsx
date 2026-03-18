@@ -121,6 +121,51 @@ function HyperdriveMiniPreview() {
   );
 }
 
+function FutureMiniPreview() {
+  return (
+    <div className="w-full h-40 bg-white overflow-hidden relative flex flex-col">
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ backgroundImage: "radial-gradient(circle, #e2e8f0 1px, transparent 1px)", backgroundSize: "14px 14px" }} />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400 to-violet-500 opacity-10 rounded-full blur-2xl pointer-events-none" />
+      <div className="bg-white/90 border-b border-slate-100 px-4 py-2 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-1.5">
+          <div className="h-4 w-4 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600" />
+          <div className="h-2 w-16 bg-slate-200 rounded-full" />
+        </div>
+        <div className="h-5 w-14 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600" />
+      </div>
+      <div className="flex-1 flex items-center px-4 gap-4 relative">
+        <div className="flex-1 space-y-1.5">
+          <div className="h-2 w-12 bg-indigo-200 rounded-full" />
+          <div className="h-3 w-28 bg-slate-800 rounded-full" />
+          <div className="h-3 w-20 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full" />
+          <div className="h-2 w-24 bg-slate-300 rounded-full mt-1" />
+          <div className="flex gap-1.5 mt-2">
+            <div className="h-5 w-20 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600" />
+            <div className="h-5 w-16 rounded-lg bg-white border-2 border-slate-200" />
+          </div>
+        </div>
+        <div className="w-24 shrink-0 rounded-xl border border-slate-100 bg-white shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-2 py-1.5">
+            <div className="h-1.5 w-12 bg-white/50 rounded mx-auto" />
+          </div>
+          <div className="p-1.5 space-y-1">
+            {[1,2,3].map(i => (
+              <div key={i} className="flex items-center gap-1">
+                <div className="h-2.5 w-2.5 rounded bg-indigo-100 shrink-0" />
+                <div className="h-1.5 flex-1 bg-slate-100 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="absolute bottom-1.5 left-3 text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-full border border-indigo-200">
+        Light · EdTech · Gradient
+      </div>
+    </div>
+  );
+}
+
 function TemplateMiniPreview({ template }: { template: TemplateResponse }) {
   if (template.previewImageUrl) {
     return (
@@ -137,6 +182,7 @@ function TemplateMiniPreview({ template }: { template: TemplateResponse }) {
 
   if (templateType === "animated_cafe") return <CafeMiniPreview />;
   if (templateType === "driving_center") return <HyperdriveMiniPreview />;
+  if (templateType === "education_center") return <FutureMiniPreview />;
 
   // Generic fallback
   const emoji = template.type === "restaurant" ? "🍽️"

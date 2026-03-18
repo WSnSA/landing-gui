@@ -144,6 +144,7 @@ export default function AdminTemplatesPage() {
   const [templates, setTemplates] = useState<TemplateResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [importing, setImporting] = useState<string | null>(null);
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -165,6 +166,19 @@ export default function AdminTemplatesPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const importPreset = async (key: string, preset: TemplateRequest) => {
+    setImporting(key);
+    try {
+      await adminTemplateService.create(preset);
+      await load();
+    } catch (e: unknown) {
+      const err = e as { payload?: string; message?: string };
+      setErr(err?.payload ?? err?.message ?? "Импортлоход алдаа гарлаа.");
+    } finally {
+      setImporting(null);
+    }
+  };
 
   const openCreate = () => {
     setEditId(null);
@@ -237,20 +251,6 @@ export default function AdminTemplatesPage() {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="secondary" onClick={load} loading={loading}>Refresh</Button>
-          {Object.entries(TEMPLATE_PRESETS).map(([key, preset]) => (
-            <Button
-              key={key}
-              variant="secondary"
-              onClick={() => {
-                setEditId(null);
-                setForm(preset);
-                setFormErr(null);
-                setModalOpen(true);
-              }}
-            >
-              ✦ {preset.name} preset
-            </Button>
-          ))}
           <Button onClick={openCreate}>+ Шинэ Template</Button>
         </div>
       </div>
@@ -260,6 +260,40 @@ export default function AdminTemplatesPage() {
           <div className="text-sm text-rose-700">{err}</div>
         </Card>
       )}
+
+      {/* Built-in presets */}
+      <div>
+        <div className="text-sm font-semibold text-slate-700 mb-3">Системд бэлтгэгдсэн template-үүд</div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Object.entries(TEMPLATE_PRESETS).map(([key, preset]) => {
+            const alreadyAdded = templates.some((t) => t.name === preset.name);
+            return (
+              <div key={key} className={`rounded-xl border p-4 flex items-start justify-between gap-4 ${alreadyAdded ? "border-green-200 bg-green-50" : "border-slate-200 bg-white"}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-slate-900 text-sm truncate">{preset.name}</div>
+                  <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{preset.description}</div>
+                </div>
+                {alreadyAdded ? (
+                  <span className="shrink-0 text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-1 rounded-full">
+                    ✓ Нэмэгдсэн
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    loading={importing === key}
+                    onClick={() => importPreset(key, preset)}
+                    className="shrink-0"
+                  >
+                    + Нэмэх
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="h-px bg-slate-200" />
 
       {templates.length === 0 && !loading ? (
         <EmptyState
