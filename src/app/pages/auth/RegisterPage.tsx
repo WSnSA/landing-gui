@@ -48,12 +48,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-blue-300 blur-[160px] opacity-20" />
+        <div className="absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-300 blur-[140px] opacity-15" />
+      </div>
       <PublicNav />
 
-      <div className="flex min-h-[calc(100vh-56px)] items-center justify-center px-4 py-12">
+      <div className="relative flex min-h-[calc(100vh-56px)] items-center justify-center px-4 py-12">
         <div className="w-full max-w-xl">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="rounded-2xl border border-white/80 bg-white/70 backdrop-blur-xl p-8 shadow-lg shadow-slate-200/50">
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-slate-900">Бүртгүүлэх</h1>
               <p className="mt-1 text-sm text-slate-500">Мэдээллээ бөглөөд account үүсгэнэ.</p>
