@@ -7,6 +7,15 @@ import type { TemplateResponse } from "../../types/dto";
 import { useAuth } from "../../auth/AuthContext";
 import { LandingRenderer, parseSchemaJson } from "../../components/LandingRenderer";
 import { safeJsonParse } from "../../utils/format";
+import CafeAnimatedPage from "../../templates/cafe/CafeAnimatedPage";
+import { DEFAULT_CAFE_CONFIG } from "../../templates/cafe/CafeConfig";
+import type { CafeConfig } from "../../templates/cafe/CafeConfig";
+import HyperdriveAnimatedPage from "../../templates/hyperdrive/HyperdriveAnimatedPage";
+import { DEFAULT_HYPERDRIVE_CONFIG } from "../../templates/hyperdrive/HyperdriveConfig";
+import type { HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
+import FutureAnimatedPage from "../../templates/future/FutureAnimatedPage";
+import { DEFAULT_FUTURE_CONFIG } from "../../templates/future/FutureConfig";
+import type { FutureConfig } from "../../templates/future/FutureConfig";
 
 const TYPES: { value: string; label: string }[] = [
   { value: "all",            label: "Бүгд" },
@@ -30,6 +39,32 @@ const TYPE_ICONS: Record<string, string> = {
   personal:        "👤",
   digital_brochure:"📄",
 };
+
+// Animated template-г schemaJson-аас шалгаж render хийх
+function AnimatedTemplatePreview({ schemaJson }: { schemaJson: string | null }) {
+  const schema = safeJsonParse<Record<string, unknown>>(schemaJson, {});
+  const type = schema.__templateType as string | undefined;
+  const cfg = schema.defaultConfig as Record<string, unknown> | undefined;
+
+  if (type === "animated_cafe") {
+    const config = { ...DEFAULT_CAFE_CONFIG, ...(cfg ?? {}) } as CafeConfig;
+    return <CafeAnimatedPage config={config} />;
+  }
+  if (type === "driving_center") {
+    const config = { ...DEFAULT_HYPERDRIVE_CONFIG, ...(cfg ?? {}) } as HyperdriveConfig;
+    return <HyperdriveAnimatedPage config={config} />;
+  }
+  if (type === "education_center") {
+    const config = { ...DEFAULT_FUTURE_CONFIG, ...(cfg ?? {}) } as FutureConfig;
+    return <FutureAnimatedPage config={config} />;
+  }
+  return null;
+}
+
+function isAnimatedTemplate(schemaJson: string | null): boolean {
+  const schema = safeJsonParse<Record<string, unknown>>(schemaJson, {});
+  return ["animated_cafe", "driving_center", "education_center"].includes(schema.__templateType as string);
+}
 
 export default function MarketplacePage() {
   const nav = useNavigate();
@@ -262,20 +297,18 @@ export default function MarketplacePage() {
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                       />
                     </div>
+                  ) : isAnimatedTemplate(tpl.schemaJson) ? (
+                    <div className="h-44 overflow-hidden relative border-b border-slate-100">
+                      <div style={{ transform: "scale(0.28)", transformOrigin: "top left", width: "357%", pointerEvents: "none" }}>
+                        <AnimatedTemplatePreview schemaJson={tpl.schemaJson} />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/40" />
+                    </div>
                   ) : tpl.schemaJson ? (
-                    /* Mini live preview — scaled-down LandingRenderer */
                     <div className="h-44 overflow-hidden bg-white relative border-b border-slate-100">
-                      <div
-                        style={{
-                          transform: "scale(0.28)",
-                          transformOrigin: "top left",
-                          width: "357%",
-                          pointerEvents: "none",
-                        }}
-                      >
+                      <div style={{ transform: "scale(0.28)", transformOrigin: "top left", width: "357%", pointerEvents: "none" }}>
                         <LandingRenderer pages={parseSchemaJson(tpl.schemaJson)} />
                       </div>
-                      {/* Fade overlay */}
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/60" />
                     </div>
                   ) : (
@@ -340,7 +373,9 @@ export default function MarketplacePage() {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto bg-white">
-            {parseSchemaJson(previewing.schemaJson).length > 0 ? (
+            {isAnimatedTemplate(previewing.schemaJson) ? (
+              <AnimatedTemplatePreview schemaJson={previewing.schemaJson} />
+            ) : parseSchemaJson(previewing.schemaJson).length > 0 ? (
               <LandingRenderer pages={parseSchemaJson(previewing.schemaJson)} />
             ) : (
               <div className="flex items-center justify-center h-full text-slate-400 text-sm">
