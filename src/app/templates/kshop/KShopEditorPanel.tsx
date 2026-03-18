@@ -83,6 +83,14 @@ export default function KShopEditorPanel({
   const setProduct = (i: number, field: keyof KShopProduct, val: string) =>
     set("products", config.products.map((p, idx) => idx === i ? { ...p, [field]: val } : p));
 
+  const toggleProductCategory = (i: number, catName: string) => {
+    const current = config.products[i].categories ?? [];
+    const updated = current.includes(catName)
+      ? current.filter((c) => c !== catName)
+      : [...current, catName];
+    set("products", config.products.map((p, idx) => idx === i ? { ...p, categories: updated } : p));
+  };
+
   const uploadProductImage = (i: number, slot: number, file: File) => {
     if (!file.type.startsWith("image/")) return;
     if (file.size > 1024 * 1024) return; // 1MB max
@@ -102,7 +110,7 @@ export default function KShopEditorPanel({
     set("products", config.products.map((p, idx) => idx === i ? { ...p, images: updated } : p));
   };
   const addProduct = () =>
-    set("products", [...config.products, { name: "Шинэ бараа", price: "0₮", originalPrice: "", tag: "Шинэ", category: "Бусад", emoji: "🛍️" }]);
+    set("products", [...config.products, { name: "Шинэ бараа", price: "0₮", originalPrice: "", tag: "Шинэ", categories: [], emoji: "🛍️" }]);
   const removeProduct = (i: number) => set("products", config.products.filter((_, idx) => idx !== i));
 
   const setCategory = (i: number, field: keyof KShopCategory, val: string) =>
@@ -255,12 +263,29 @@ export default function KShopEditorPanel({
                       <Input value={p.price} onChange={(e) => setProduct(i, "price", e.target.value)} placeholder="0₮" />
                       <Input value={p.originalPrice ?? ""} onChange={(e) => setProduct(i, "originalPrice", e.target.value)} placeholder="Хуучин үнэ" />
                     </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <select value={p.tag ?? ""} onChange={(e) => setProduct(i, "tag", e.target.value)}
-                        className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs text-slate-700 outline-none">
-                        {TAG_OPTIONS.map((t) => <option key={t} value={t}>{t || "— Tag байхгүй"}</option>)}
-                      </select>
-                      <Input value={p.category} onChange={(e) => setProduct(i, "category", e.target.value)} placeholder="Категори" />
+                    <select value={p.tag ?? ""} onChange={(e) => setProduct(i, "tag", e.target.value)}
+                      className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs text-slate-700 outline-none w-full">
+                      {TAG_OPTIONS.map((t) => <option key={t} value={t}>{t || "— Tag байхгүй"}</option>)}
+                    </select>
+                    {/* Multi-category checkboxes */}
+                    <div>
+                      <div className="text-[10px] font-semibold text-slate-400 mb-1.5">Ангиллал (олон сонгоно уу)</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {config.categories.map((cat) => {
+                          const active = (p.categories ?? []).includes(cat.name);
+                          return (
+                            <button key={cat.name} type="button"
+                              onClick={() => toggleProductCategory(i, cat.name)}
+                              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${
+                                active
+                                  ? "bg-slate-800 border-slate-800 text-white"
+                                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
+                              }`}>
+                              <span>{cat.icon}</span>{cat.name}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 ))}

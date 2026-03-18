@@ -113,7 +113,11 @@ function ProductCard({ product, theme, index, facebook }: {
 
         {/* Info */}
         <div className="p-4">
-          <div className="text-xs text-slate-400 mb-1">{product.category}</div>
+          <div className="flex flex-wrap gap-1 mb-1">
+            {(product.categories ?? []).map((c, ci) => (
+              <span key={ci} className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${theme.accentBg} ${theme.accentText}`}>{c}</span>
+            ))}
+          </div>
           <div className="font-bold text-slate-900 text-sm leading-tight mb-2">{product.name}</div>
           <div className="flex items-center gap-2">
             <span className={`font-black text-base ${theme.accentText}`}>{product.price}</span>
@@ -135,7 +139,7 @@ export default function KShopAnimatedPage({ config }: { config: KShopConfig }) {
 
   const filteredProducts = activeCategory === "Бүгд"
     ? config.products
-    : config.products.filter((p) => p.category === activeCategory);
+    : config.products.filter((p) => (p.categories ?? []).includes(activeCategory));
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">

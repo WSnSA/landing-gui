@@ -3,7 +3,7 @@ export interface KShopProduct {
   price: string;
   originalPrice?: string;
   tag?: string;       // "Шинэ", "Sale", "Онцлох"
-  category: string;
+  categories: string[];  // олон категорит хамаарах боломжтой
   emoji: string;      // placeholder дүрс (зураг байхгүй үед)
   images?: string[];  // base64 эсвэл URL — хамгийн ихдээ 3 зураг
 }
@@ -132,14 +132,14 @@ export const DEFAULT_KSHOP_CONFIG: KShopConfig = {
 
   productsTitle: "Шинэ бараанууд",
   products: [
-    { name: "Oversize Hoodie",       price: "89,000₮",  originalPrice: "120,000₮", tag: "Sale",  category: "Эрэгтэй",  emoji: "🧥" },
-    { name: "Floral Mini Dress",     price: "95,000₮",  originalPrice: "",          tag: "Шинэ", category: "Эмэгтэй", emoji: "👗" },
-    { name: "Wide-leg Denim",        price: "110,000₮", originalPrice: "",          tag: "Шинэ", category: "Эмэгтэй", emoji: "👖" },
-    { name: "Stripe Polo Shirt",     price: "65,000₮",  originalPrice: "80,000₮",  tag: "Sale",  category: "Эрэгтэй",  emoji: "👕" },
-    { name: "Canvas Tote Bag",       price: "45,000₮",  originalPrice: "",          tag: "",      category: "Цүнх",     emoji: "👜" },
-    { name: "Platform Sneakers",     price: "149,000₮", originalPrice: "",          tag: "Онцлох", category: "Гутал",   emoji: "👟" },
-    { name: "Knit Cardigan Set",     price: "120,000₮", originalPrice: "150,000₮", tag: "Sale",  category: "Эмэгтэй", emoji: "🧶" },
-    { name: "Kids Cartoon Tee",      price: "35,000₮",  originalPrice: "",          tag: "Шинэ", category: "Хүүхэд",  emoji: "👧" },
+    { name: "Oversize Hoodie",       price: "89,000₮",  originalPrice: "120,000₮", tag: "Sale",   categories: ["Эрэгтэй"],          emoji: "🧥" },
+    { name: "Floral Mini Dress",     price: "95,000₮",  originalPrice: "",          tag: "Шинэ",  categories: ["Эмэгтэй"],          emoji: "👗" },
+    { name: "Wide-leg Denim",        price: "110,000₮", originalPrice: "",          tag: "Шинэ",  categories: ["Эмэгтэй"],          emoji: "👖" },
+    { name: "Stripe Polo Shirt",     price: "65,000₮",  originalPrice: "80,000₮",  tag: "Sale",   categories: ["Эрэгтэй"],          emoji: "👕" },
+    { name: "Canvas Tote Bag",       price: "45,000₮",  originalPrice: "",          tag: "",       categories: ["Цүнх"],             emoji: "👜" },
+    { name: "Platform Sneakers",     price: "149,000₮", originalPrice: "",          tag: "Онцлох", categories: ["Гутал"],            emoji: "👟" },
+    { name: "Knit Cardigan Set",     price: "120,000₮", originalPrice: "150,000₮", tag: "Sale",   categories: ["Эмэгтэй"],          emoji: "🧶" },
+    { name: "Kids Cartoon Tee",      price: "35,000₮",  originalPrice: "",          tag: "Шинэ",  categories: ["Хүүхэд"],           emoji: "👧" },
   ],
 
   stepsTitle: "Хэрхэн захиалах вэ?",
