@@ -1,5 +1,6 @@
 import type { TemplateRequest } from "../types/dto";
 import { DEFAULT_CAFE_CONFIG } from "../templates/cafe/CafeConfig";
+import { DEFAULT_HYPERDRIVE_CONFIG } from "../templates/hyperdrive/HyperdriveConfig";
 
 export const TEMPLATE_PRESETS: Record<string, TemplateRequest> = {
   cafe: {
@@ -10,6 +11,16 @@ export const TEMPLATE_PRESETS: Record<string, TemplateRequest> = {
     schemaJson: JSON.stringify({
       __templateType: "animated_cafe",
       defaultConfig: DEFAULT_CAFE_CONFIG,
+    }, null, 2),
+  },
+  hyperdrive: {
+    name: "Hyperdrive — Жолооны сургалтын төв",
+    type: "business",
+    description: "Dark racing-themed animated template. Дрифт/жолооны сургалтын төв, спорт клуб, авто сервист тохиромжтой. Сургалтын багцууд, онцлог, багш нар, холбоо барих бүхий бүтэн хуудас.",
+    previewImageUrl: null,
+    schemaJson: JSON.stringify({
+      __templateType: "driving_center",
+      defaultConfig: DEFAULT_HYPERDRIVE_CONFIG,
     }, null, 2),
   },
 };

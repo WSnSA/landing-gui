@@ -10,6 +10,8 @@ import type { LandingResponse } from "../../types/dto";
 import { safeJsonParse } from "../../utils/format";
 import CafeAnimatedPage from "../../templates/cafe/CafeAnimatedPage";
 import { DEFAULT_CAFE_CONFIG, type CafeConfig } from "../../templates/cafe/CafeConfig";
+import HyperdriveAnimatedPage from "../../templates/hyperdrive/HyperdriveAnimatedPage";
+import { DEFAULT_HYPERDRIVE_CONFIG, type HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
 
 export default function PreviewPage() {
   const { projectId } = useParams();
@@ -18,11 +20,13 @@ export default function PreviewPage() {
   const [landing, setLanding] = useState<LandingResponse | null>(null);
   const [pages, setPages] = useState<RendererPage[]>([]);
   const [cafeConfig, setCafeConfig] = useState<CafeConfig | null>(null);
+  const [hyperdriveConfig, setHyperdriveConfig] = useState<HyperdriveConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setLoading(true);
     setCafeConfig(null);
+    setHyperdriveConfig(null);
     try {
       const l = await landingService.get(id);
       setLanding(l);
@@ -31,6 +35,10 @@ export default function PreviewPage() {
       const cfg = safeJsonParse<Record<string, unknown>>(l.configJson, {});
       if (cfg.__type === "animated_cafe") {
         setCafeConfig({ ...DEFAULT_CAFE_CONFIG, ...cfg } as CafeConfig);
+        return;
+      }
+      if (cfg.__type === "driving_center") {
+        setHyperdriveConfig({ ...DEFAULT_HYPERDRIVE_CONFIG, ...cfg } as HyperdriveConfig);
         return;
       }
 
@@ -123,6 +131,22 @@ export default function PreviewPage() {
           </div>
           <div className="max-h-[75vh] overflow-y-auto">
             <CafeAnimatedPage config={cafeConfig} />
+          </div>
+        </div>
+      ) : hyperdriveConfig ? (
+        <div className="rounded-2xl border border-zinc-800 overflow-hidden bg-zinc-950 shadow-sm">
+          <div className="border-b border-white/10 bg-zinc-900 px-4 py-2.5 flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <div className="h-3 w-3 rounded-full bg-rose-400" />
+              <div className="h-3 w-3 rounded-full bg-amber-400" />
+              <div className="h-3 w-3 rounded-full bg-green-400" />
+            </div>
+            <div className="flex-1 rounded-md bg-zinc-800 border border-white/10 px-3 py-1 text-xs text-zinc-400 text-center truncate">
+              landing.mn/p/{landing?.slug}
+            </div>
+          </div>
+          <div className="max-h-[75vh] overflow-y-auto">
+            <HyperdriveAnimatedPage config={hyperdriveConfig} />
           </div>
         </div>
       ) : pages.length === 0 ? (

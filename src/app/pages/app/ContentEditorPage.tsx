@@ -12,6 +12,9 @@ import { safeJsonParse, safeJsonStringify } from "../../utils/format";
 import { DEFAULT_CAFE_CONFIG } from "../../templates/cafe/CafeConfig";
 import type { CafeConfig } from "../../templates/cafe/CafeConfig";
 import CafeEditorPanel from "../../templates/cafe/CafeEditorPanel";
+import { DEFAULT_HYPERDRIVE_CONFIG } from "../../templates/hyperdrive/HyperdriveConfig";
+import type { HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
+import HyperdriveEditorPanel from "../../templates/hyperdrive/HyperdriveEditorPanel";
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Үндсэн хэсэг", features: "Давуу талууд", about: "Бидний тухай",
@@ -207,6 +210,8 @@ export default function ContentEditorPage() {
   const [err, setErr] = useState<string | null>(null);
   const [cafeConfig, setCafeConfig] = useState<CafeConfig | null>(null);
   const [cafeSaving, setCafeSaving] = useState(false);
+  const [hyperdriveConfig, setHyperdriveConfig] = useState<HyperdriveConfig | null>(null);
+  const [hyperdriveSaving, setHyperdriveSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -217,7 +222,11 @@ export default function ContentEditorPage() {
       const cfg = safeJsonParse<Record<string, unknown>>(landing.configJson, {});
       if (cfg.__type === "animated_cafe") {
         setCafeConfig({ ...DEFAULT_CAFE_CONFIG, ...cfg } as CafeConfig);
-        return; // sections ачаалахгүй
+        return;
+      }
+      if (cfg.__type === "driving_center") {
+        setHyperdriveConfig({ ...DEFAULT_HYPERDRIVE_CONFIG, ...cfg } as HyperdriveConfig);
+        return;
       }
 
       const pages = await pageService.list(landingId);
@@ -247,6 +256,16 @@ export default function ContentEditorPage() {
     }
   };
 
+  const saveHyperdriveConfig = async () => {
+    if (!hyperdriveConfig) return;
+    setHyperdriveSaving(true);
+    try {
+      await landingService.update(landingId, { configJson: JSON.stringify(hyperdriveConfig) });
+    } finally {
+      setHyperdriveSaving(false);
+    }
+  };
+
   const saveComponent = async (comp: ComponentResponse, propsJson: string) => {
     await componentService.update(comp.id, { componentType: comp.componentType, propsJson, orderIndex: comp.orderIndex });
     setSections((prev) =>
@@ -270,6 +289,19 @@ export default function ContentEditorPage() {
           onChange={setCafeConfig}
           saving={cafeSaving}
           onSave={saveCafeConfig}
+        />
+      </div>
+    );
+  }
+
+  if (hyperdriveConfig) {
+    return (
+      <div className="h-[calc(100vh-112px)] -mx-6 -my-8">
+        <HyperdriveEditorPanel
+          config={hyperdriveConfig}
+          onChange={setHyperdriveConfig}
+          saving={hyperdriveSaving}
+          onSave={saveHyperdriveConfig}
         />
       </div>
     );
