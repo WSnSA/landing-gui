@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls:*)",
+      "Bash(xargs grep:*)",
+      "Bash(npm run:*)",
+      "Bash(node -e \":*)",
+      "Bash(docker build:*)",
+      "Bash(find D:/Projects/back/Modernminimalsaaslandingpage/.github -name *.yml)"
+    ]
+  }
+}

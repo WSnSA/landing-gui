@@ -80,6 +80,7 @@ export interface LandingResponse {
   templateId: number | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  configJson: string | null;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;

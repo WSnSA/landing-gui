@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, EmptyState, Field, Input, Modal, Select, Textarea } from "../../components/ui";
 import { adminTemplateService } from "../../services/templateService";
 import type { TemplateRequest, TemplateResponse } from "../../types/dto";
+import { TEMPLATE_PRESETS } from "../../data/templatePresets";
 
 const TEMPLATE_TYPES = [
   { value: "business", label: "Бизнес" },
@@ -234,8 +235,22 @@ export default function AdminTemplatesPage() {
             Template үүсгэх, засах, устгах. Хэрэглэгчид template сонгоход бүтэц автоматаар үүснэ.
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="secondary" onClick={load} loading={loading}>Refresh</Button>
+          {Object.entries(TEMPLATE_PRESETS).map(([key, preset]) => (
+            <Button
+              key={key}
+              variant="secondary"
+              onClick={() => {
+                setEditId(null);
+                setForm(preset);
+                setFormErr(null);
+                setModalOpen(true);
+              }}
+            >
+              ✦ {preset.name} preset
+            </Button>
+          ))}
           <Button onClick={openCreate}>+ Шинэ Template</Button>
         </div>
       </div>

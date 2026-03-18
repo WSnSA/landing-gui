@@ -8,12 +8,14 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import SetupPage from "./pages/auth/SetupPage";
 
 /* Examples */
 import ExamplesIndexPage from "./pages/examples/ExamplesIndexPage";
 import FreeTemplateExample from "./pages/examples/FreeTemplateExample";
 import BusinessTemplateExample from "./pages/examples/BusinessTemplateExample";
 import DoneForYouExample from "./pages/examples/DoneForYouExample";
+import CafeTemplateExample from "./pages/examples/CafeTemplateExample";
 
 /* Legal/Info */
 import TermsPage from "./pages/TermsPage";
@@ -37,6 +39,9 @@ import AdminPaymentsPage from "./pages/app/AdminPaymentsPage";
 import AdminTemplatesPage from "./pages/app/AdminTemplatesPage";
 import AdminUsersPage from "./pages/app/AdminUsersPage";
 
+/* Standalone Admin */
+import AdminLayout from "./pages/admin/AdminLayout";
+
 /* Public render — auth шаардахгүй */
 import PublicRenderPage from "./pages/public/PublicRenderPage";
 
@@ -50,6 +55,7 @@ export const router = createBrowserRouter([
   { path: "/examples/free", element: <FreeTemplateExample /> },
   { path: "/examples/business", element: <BusinessTemplateExample /> },
   { path: "/examples/done-for-you", element: <DoneForYouExample /> },
+  { path: "/examples/cafe", element: <CafeTemplateExample /> },
   { path: "/terms", element: <TermsPage /> },
   { path: "/privacy", element: <PrivacyPage /> },
   { path: "/contact", element: <ContactPage /> },
@@ -62,6 +68,7 @@ export const router = createBrowserRouter([
   { path: "/register", element: <RegisterPage /> },
   { path: "/forgot-password", element: <ForgotPasswordPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },
+  { path: "/setup", element: <SetupPage /> },
 
   /* ---------- PROTECTED MAIN ---------- */
   {
@@ -93,6 +100,18 @@ export const router = createBrowserRouter([
       { path: "admin/users", element: <AdminUsersPage /> },
       { path: "admin/payments", element: <AdminPaymentsPage /> },
       { path: "admin/templates", element: <AdminTemplatesPage /> },
+    ],
+  },
+
+  /* ---------- STANDALONE ADMIN ---------- */
+  {
+    path: "/admin",
+    element: <RequireAuth children={undefined}><AdminLayout /></RequireAuth>,
+    children: [
+      { index: true, element: <Navigate to="/admin/users" replace /> },
+      { path: "users", element: <AdminUsersPage /> },
+      { path: "payments", element: <AdminPaymentsPage /> },
+      { path: "templates", element: <AdminTemplatesPage /> },
     ],
   },
 

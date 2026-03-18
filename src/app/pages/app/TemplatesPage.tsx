@@ -4,6 +4,7 @@ import { Button, Card, EmptyState } from "../../components/ui";
 import { landingService } from "../../services/landingService";
 import { templateService } from "../../services/templateService";
 import type { LandingResponse, TemplateResponse } from "../../types/dto";
+import { safeJsonParse } from "../../utils/format";
 
 const TYPE_LABELS: Record<string, string> = {
   business: "Бизнес",
@@ -59,10 +60,18 @@ export default function TemplatesPage() {
         templateId: tpl.id,
       });
 
+      // Animated template бол configJson initialize хийнэ
+      const schema = safeJsonParse<Record<string, unknown>>(tpl.schemaJson, {});
+      if (schema.__templateType && schema.defaultConfig) {
+        await landingService.update(created.id, {
+          configJson: JSON.stringify({ ...(schema.defaultConfig as object), __type: schema.__templateType }),
+        });
+      }
+
       // Хуучин landing устгана
       await landingService.remove(landingId);
 
-      navigate(`/app/${created.id}/builder`, { replace: true });
+      navigate(`/app/${created.id}/editor`, { replace: true });
     } catch (e: unknown) {
       const err = e as { payload?: string; message?: string };
       setErr(err?.payload ?? err?.message ?? "Алдаа гарлаа.");

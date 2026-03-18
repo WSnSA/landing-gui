@@ -7,6 +7,9 @@ import { sectionService } from "../../services/sectionService";
 import { componentService } from "../../services/componentService";
 import { LandingRenderer, type RendererPage } from "../../components/LandingRenderer";
 import type { LandingResponse } from "../../types/dto";
+import { safeJsonParse } from "../../utils/format";
+import CafeAnimatedPage from "../../templates/cafe/CafeAnimatedPage";
+import { DEFAULT_CAFE_CONFIG, type CafeConfig } from "../../templates/cafe/CafeConfig";
 
 export default function PreviewPage() {
   const { projectId } = useParams();
@@ -14,13 +17,22 @@ export default function PreviewPage() {
 
   const [landing, setLanding] = useState<LandingResponse | null>(null);
   const [pages, setPages] = useState<RendererPage[]>([]);
+  const [cafeConfig, setCafeConfig] = useState<CafeConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setLoading(true);
+    setCafeConfig(null);
     try {
       const l = await landingService.get(id);
       setLanding(l);
+
+      // Animated template шалгах
+      const cfg = safeJsonParse<Record<string, unknown>>(l.configJson, {});
+      if (cfg.__type === "animated_cafe") {
+        setCafeConfig({ ...DEFAULT_CAFE_CONFIG, ...cfg } as CafeConfig);
+        return;
+      }
 
       const rawPages = await pageService.list(id);
       const sorted = rawPages.slice().sort((a, b) => a.orderIndex - b.orderIndex);
@@ -96,6 +108,22 @@ export default function PreviewPage() {
       {loading ? (
         <div className="rounded-2xl border border-slate-200 bg-white h-96 flex items-center justify-center text-sm text-slate-400">
           Ачаалж байна…
+        </div>
+      ) : cafeConfig ? (
+        <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <div className="h-3 w-3 rounded-full bg-rose-400" />
+              <div className="h-3 w-3 rounded-full bg-amber-400" />
+              <div className="h-3 w-3 rounded-full bg-green-400" />
+            </div>
+            <div className="flex-1 rounded-md bg-white border border-slate-200 px-3 py-1 text-xs text-slate-500 text-center truncate">
+              landing.mn/p/{landing?.slug}
+            </div>
+          </div>
+          <div className="max-h-[75vh] overflow-y-auto">
+            <CafeAnimatedPage config={cafeConfig} />
+          </div>
         </div>
       ) : pages.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white h-60 flex flex-col items-center justify-center gap-3 text-slate-400">

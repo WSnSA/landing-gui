@@ -13,6 +13,14 @@ export const adminUserService = {
     });
   },
 
+  /** Анхны admin үүсгэх — auth шаардахгүй (backend-д зөвшөөрөгдсөн бол) */
+  setupFirstAdmin(req: RegisterRequest) {
+    return apiFetch<void>("/api/admin/users/create-admin", {
+      method: "POST",
+      body: JSON.stringify(req),
+    }, false);
+  },
+
   promoteAdmin(userId: number) {
     return apiFetch<void>(`/api/admin/users/${userId}/promote-admin`, {
       method: "POST",

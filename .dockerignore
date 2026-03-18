@@ -1,4 +1,8 @@
 node_modules
+dist
+.env.local
+.env.*.local
+.claude
 .git
 .gitignore
 .github

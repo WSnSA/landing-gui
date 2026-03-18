@@ -5,9 +5,13 @@ import { Button, Card, EmptyState, Field, Input, Select, Textarea } from "../../
 import { pageService } from "../../services/pageService";
 import { sectionService } from "../../services/sectionService";
 import { componentService } from "../../services/componentService";
+import { landingService } from "../../services/landingService";
 import { LandingRenderer, type RendererPage } from "../../components/LandingRenderer";
 import type { ComponentResponse, SectionResponse } from "../../types/dto";
 import { safeJsonParse, safeJsonStringify } from "../../utils/format";
+import { DEFAULT_CAFE_CONFIG } from "../../templates/cafe/CafeConfig";
+import type { CafeConfig } from "../../templates/cafe/CafeConfig";
+import CafeEditorPanel from "../../templates/cafe/CafeEditorPanel";
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Үндсэн хэсэг", features: "Давуу талууд", about: "Бидний тухай",
@@ -201,11 +205,21 @@ export default function ContentEditorPage() {
   const [sections, setSections] = useState<SectionWithComponents[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [cafeConfig, setCafeConfig] = useState<CafeConfig | null>(null);
+  const [cafeSaving, setCafeSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
+      // Animated template шалгах
+      const landing = await landingService.get(landingId);
+      const cfg = safeJsonParse<Record<string, unknown>>(landing.configJson, {});
+      if (cfg.__type === "animated_cafe") {
+        setCafeConfig({ ...DEFAULT_CAFE_CONFIG, ...cfg } as CafeConfig);
+        return; // sections ачаалахгүй
+      }
+
       const pages = await pageService.list(landingId);
       if (pages.length === 0) { setSections([]); return; }
       const firstPage = pages.slice().sort((a, b) => a.orderIndex - b.orderIndex)[0];
@@ -223,6 +237,16 @@ export default function ContentEditorPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const saveCafeConfig = async () => {
+    if (!cafeConfig) return;
+    setCafeSaving(true);
+    try {
+      await landingService.update(landingId, { configJson: JSON.stringify(cafeConfig) });
+    } finally {
+      setCafeSaving(false);
+    }
+  };
+
   const saveComponent = async (comp: ComponentResponse, propsJson: string) => {
     await componentService.update(comp.id, { componentType: comp.componentType, propsJson, orderIndex: comp.orderIndex });
     setSections((prev) =>
@@ -234,6 +258,19 @@ export default function ContentEditorPage() {
     return (
       <div className="flex items-center justify-center h-60 text-sm text-slate-400">
         Ачаалж байна...
+      </div>
+    );
+  }
+
+  if (cafeConfig) {
+    return (
+      <div className="h-[calc(100vh-112px)] -mx-6 -my-8">
+        <CafeEditorPanel
+          config={cafeConfig}
+          onChange={setCafeConfig}
+          saving={cafeSaving}
+          onSave={saveCafeConfig}
+        />
       </div>
     );
   }

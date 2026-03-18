@@ -5,6 +5,7 @@ const items = [
   { to: "/examples/free", name: "Free template", desc: "Minimal нэг хуудас" },
   { to: "/examples/business", name: "Business template", desc: "Компанийн танилцуулга" },
   { to: "/examples/done-for-you", name: "Done-for-you", desc: "Дэлгэрэнгүй бүтэц" },
+  { to: "/examples/cafe", name: "Кофе шоп", desc: "Ресторан / кафегийн жишээ template" },
 ];
 
 export default function ExamplesIndexPage() {

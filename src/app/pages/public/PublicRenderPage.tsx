@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import { publicService } from "../../services/publicService";
 import type { PublicLandingResponse } from "../../types/dto";
 import { safeJsonParse } from "../../utils/format";
+import CafeAnimatedPage from "../../templates/cafe/CafeAnimatedPage";
+import { DEFAULT_CAFE_CONFIG } from "../../templates/cafe/CafeConfig";
+import type { CafeConfig } from "../../templates/cafe/CafeConfig";
 
 // ── Component render ─────────────────────────────────────────────────────────
 
@@ -264,13 +267,29 @@ export default function PublicRenderPage() {
       .catch(() => setError("Вэбсайт олдсонгүй эсвэл нийтлэгдээгүй байна."));
   }, [slug]);
 
-  // SEO meta
+  // Animated template шалгах
+  const configObj = safeJsonParse<Record<string, unknown>>(data?.configJson ?? null, {});
+  const isAnimatedCafe = configObj.__type === "animated_cafe";
+
+  // SEO meta + favicon
   useEffect(() => {
     if (!data) return;
     document.title = data.seoTitle || data.name;
     const meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (meta && data.seoDescription) meta.content = data.seoDescription;
-  }, [data]);
+
+    // Favicon: animated cafe-д brandLogo ашиглана
+    const logoUrl = isAnimatedCafe ? (configObj.brandLogo as string | undefined) : null;
+    if (logoUrl) {
+      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = logoUrl;
+    }
+  }, [data, isAnimatedCafe, configObj.brandLogo]);
 
   if (error) {
     return (
@@ -290,6 +309,11 @@ export default function PublicRenderPage() {
         <div className="text-sm text-slate-400">Ачаалж байна...</div>
       </div>
     );
+  }
+
+  if (isAnimatedCafe) {
+    const cafeConfig: CafeConfig = { ...DEFAULT_CAFE_CONFIG, ...configObj } as CafeConfig;
+    return <CafeAnimatedPage config={cafeConfig} />;
   }
 
   // Эхний page-г render хийнэ (multi-page дараа нэмж болно)
