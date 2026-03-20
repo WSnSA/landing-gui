@@ -230,19 +230,20 @@ export default function ContentEditorPage() {
       // Animated template шалгах
       const landing = await landingService.get(landingId);
       const cfg = safeJsonParse<Record<string, unknown>>(landing.configJson, {});
-      if (cfg.__type === "animated_cafe") {
+      const t = cfg.__type as string | undefined;
+      if (["animated_cafe","noir_restaurant","street_food","garden_bistro"].includes(t ?? "")) {
         setCafeConfig({ ...DEFAULT_CAFE_CONFIG, ...cfg } as CafeConfig);
         return;
       }
-      if (cfg.__type === "driving_center") {
+      if (["driving_center","atlas_agency","nexus_tech","prism_creative"].includes(t ?? "")) {
         setHyperdriveConfig({ ...DEFAULT_HYPERDRIVE_CONFIG, ...cfg } as HyperdriveConfig);
         return;
       }
-      if (cfg.__type === "education_center") {
+      if (["education_center","bloom_kids","mentor_coach","slate_academy"].includes(t ?? "")) {
         setFutureConfig({ ...DEFAULT_FUTURE_CONFIG, ...cfg } as FutureConfig);
         return;
       }
-      if (cfg.__type === "online_shop") {
+      if (["online_shop","luxe_boutique","zest_food","mono_store"].includes(t ?? "")) {
         setKshopConfig({ ...DEFAULT_KSHOP_CONFIG, ...cfg } as KShopConfig);
         return;
       }

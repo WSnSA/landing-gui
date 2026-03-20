@@ -9,12 +9,24 @@ import { LandingRenderer, type RendererPage } from "../../components/LandingRend
 import type { LandingResponse } from "../../types/dto";
 import { safeJsonParse } from "../../utils/format";
 import CafeAnimatedPage from "../../templates/cafe/CafeAnimatedPage";
+import NoirRestaurantPage from "../../templates/cafe/NoirRestaurantPage";
+import StreetFoodPage from "../../templates/cafe/StreetFoodPage";
+import GardenBistroPage from "../../templates/cafe/GardenBistroPage";
 import { DEFAULT_CAFE_CONFIG, type CafeConfig } from "../../templates/cafe/CafeConfig";
 import HyperdriveAnimatedPage from "../../templates/hyperdrive/HyperdriveAnimatedPage";
+import AtlasAgencyPage from "../../templates/hyperdrive/AtlasAgencyPage";
+import NexusTechPage from "../../templates/hyperdrive/NexusTechPage";
+import PrismCreativePage from "../../templates/hyperdrive/PrismCreativePage";
 import { DEFAULT_HYPERDRIVE_CONFIG, type HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
 import FutureAnimatedPage from "../../templates/future/FutureAnimatedPage";
+import BloomKidsPage from "../../templates/future/BloomKidsPage";
+import MentorCoachPage from "../../templates/future/MentorCoachPage";
+import SlateAcademyPage from "../../templates/future/SlateAcademyPage";
 import { DEFAULT_FUTURE_CONFIG, type FutureConfig } from "../../templates/future/FutureConfig";
 import KShopAnimatedPage from "../../templates/kshop/KShopAnimatedPage";
+import LuxeBoutiquePage from "../../templates/kshop/LuxeBoutiquePage";
+import ZestFoodPage from "../../templates/kshop/ZestFoodPage";
+import MonoStorePage from "../../templates/kshop/MonoStorePage";
 import { DEFAULT_KSHOP_CONFIG, type KShopConfig } from "../../templates/kshop/KShopConfig";
 
 export default function PreviewPage() {
@@ -41,19 +53,20 @@ export default function PreviewPage() {
 
       // Animated template шалгах
       const cfg = safeJsonParse<Record<string, unknown>>(l.configJson, {});
-      if (cfg.__type === "animated_cafe") {
+      const t = cfg.__type as string | undefined;
+      if (["animated_cafe","noir_restaurant","street_food","garden_bistro"].includes(t ?? "")) {
         setCafeConfig({ ...DEFAULT_CAFE_CONFIG, ...cfg } as CafeConfig);
         return;
       }
-      if (cfg.__type === "driving_center") {
+      if (["driving_center","atlas_agency","nexus_tech","prism_creative"].includes(t ?? "")) {
         setHyperdriveConfig({ ...DEFAULT_HYPERDRIVE_CONFIG, ...cfg } as HyperdriveConfig);
         return;
       }
-      if (cfg.__type === "education_center") {
+      if (["education_center","bloom_kids","mentor_coach","slate_academy"].includes(t ?? "")) {
         setFutureConfig({ ...DEFAULT_FUTURE_CONFIG, ...cfg } as FutureConfig);
         return;
       }
-      if (cfg.__type === "online_shop") {
+      if (["online_shop","luxe_boutique","zest_food","mono_store"].includes(t ?? "")) {
         setKshopConfig({ ...DEFAULT_KSHOP_CONFIG, ...cfg } as KShopConfig);
         return;
       }
@@ -98,6 +111,7 @@ export default function PreviewPage() {
   useEffect(() => { load(); }, [id]);
 
   const isPublished = landing?.status === "PUBLISHED";
+  const templateType = (safeJsonParse<Record<string, unknown>>(landing?.configJson ?? null, {}).__type ?? "") as string;
 
   return (
     <div className="space-y-4">
@@ -146,7 +160,10 @@ export default function PreviewPage() {
             </div>
           </div>
           <div className="max-h-[75vh] overflow-y-auto">
-            <CafeAnimatedPage config={cafeConfig} />
+            {templateType === "noir_restaurant" ? <NoirRestaurantPage config={cafeConfig} />
+            : templateType === "street_food"    ? <StreetFoodPage config={cafeConfig} />
+            : templateType === "garden_bistro"  ? <GardenBistroPage config={cafeConfig} />
+            : <CafeAnimatedPage config={cafeConfig} />}
           </div>
         </div>
       ) : futureConfig ? (
@@ -162,7 +179,10 @@ export default function PreviewPage() {
             </div>
           </div>
           <div className="max-h-[75vh] overflow-y-auto">
-            <FutureAnimatedPage config={futureConfig} />
+            {templateType === "bloom_kids"    ? <BloomKidsPage config={futureConfig} />
+            : templateType === "mentor_coach"  ? <MentorCoachPage config={futureConfig} />
+            : templateType === "slate_academy" ? <SlateAcademyPage config={futureConfig} />
+            : <FutureAnimatedPage config={futureConfig} />}
           </div>
         </div>
       ) : kshopConfig ? (
@@ -178,7 +198,10 @@ export default function PreviewPage() {
             </div>
           </div>
           <div className="max-h-[75vh] overflow-y-auto">
-            <KShopAnimatedPage config={kshopConfig} />
+            {templateType === "luxe_boutique" ? <LuxeBoutiquePage config={kshopConfig} />
+            : templateType === "zest_food"     ? <ZestFoodPage config={kshopConfig} />
+            : templateType === "mono_store"    ? <MonoStorePage config={kshopConfig} />
+            : <KShopAnimatedPage config={kshopConfig} />}
           </div>
         </div>
       ) : hyperdriveConfig ? (
@@ -194,7 +217,10 @@ export default function PreviewPage() {
             </div>
           </div>
           <div className="max-h-[75vh] overflow-y-auto">
-            <HyperdriveAnimatedPage config={hyperdriveConfig} />
+            {templateType === "atlas_agency"   ? <AtlasAgencyPage config={hyperdriveConfig} />
+            : templateType === "nexus_tech"     ? <NexusTechPage config={hyperdriveConfig} />
+            : templateType === "prism_creative" ? <PrismCreativePage config={hyperdriveConfig} />
+            : <HyperdriveAnimatedPage config={hyperdriveConfig} />}
           </div>
         </div>
       ) : pages.length === 0 ? (

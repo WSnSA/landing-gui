@@ -8,15 +8,27 @@ import { useAuth } from "../../auth/AuthContext";
 import { LandingRenderer, parseSchemaJson } from "../../components/LandingRenderer";
 import { safeJsonParse } from "../../utils/format";
 import CafeAnimatedPage from "../../templates/cafe/CafeAnimatedPage";
+import NoirRestaurantPage from "../../templates/cafe/NoirRestaurantPage";
+import StreetFoodPage from "../../templates/cafe/StreetFoodPage";
+import GardenBistroPage from "../../templates/cafe/GardenBistroPage";
 import { DEFAULT_CAFE_CONFIG } from "../../templates/cafe/CafeConfig";
 import type { CafeConfig } from "../../templates/cafe/CafeConfig";
 import HyperdriveAnimatedPage from "../../templates/hyperdrive/HyperdriveAnimatedPage";
+import AtlasAgencyPage from "../../templates/hyperdrive/AtlasAgencyPage";
+import NexusTechPage from "../../templates/hyperdrive/NexusTechPage";
+import PrismCreativePage from "../../templates/hyperdrive/PrismCreativePage";
 import { DEFAULT_HYPERDRIVE_CONFIG } from "../../templates/hyperdrive/HyperdriveConfig";
 import type { HyperdriveConfig } from "../../templates/hyperdrive/HyperdriveConfig";
 import FutureAnimatedPage from "../../templates/future/FutureAnimatedPage";
+import BloomKidsPage from "../../templates/future/BloomKidsPage";
+import MentorCoachPage from "../../templates/future/MentorCoachPage";
+import SlateAcademyPage from "../../templates/future/SlateAcademyPage";
 import { DEFAULT_FUTURE_CONFIG } from "../../templates/future/FutureConfig";
 import type { FutureConfig } from "../../templates/future/FutureConfig";
 import KShopAnimatedPage from "../../templates/kshop/KShopAnimatedPage";
+import LuxeBoutiquePage from "../../templates/kshop/LuxeBoutiquePage";
+import ZestFoodPage from "../../templates/kshop/ZestFoodPage";
+import MonoStorePage from "../../templates/kshop/MonoStorePage";
 import { DEFAULT_KSHOP_CONFIG } from "../../templates/kshop/KShopConfig";
 import type { KShopConfig } from "../../templates/kshop/KShopConfig";
 
@@ -49,28 +61,47 @@ function AnimatedTemplatePreview({ schemaJson }: { schemaJson: string | null }) 
   const type = schema.__templateType as string | undefined;
   const cfg = schema.defaultConfig as Record<string, unknown> | undefined;
 
-  if (type === "animated_cafe") {
+  if (["animated_cafe","noir_restaurant","street_food","garden_bistro"].includes(type ?? "")) {
     const config = { ...DEFAULT_CAFE_CONFIG, ...(cfg ?? {}) } as CafeConfig;
+    if (type === "noir_restaurant") return <NoirRestaurantPage config={config} />;
+    if (type === "street_food")     return <StreetFoodPage config={config} />;
+    if (type === "garden_bistro")   return <GardenBistroPage config={config} />;
     return <CafeAnimatedPage config={config} />;
   }
-  if (type === "driving_center") {
+  if (["driving_center","atlas_agency","nexus_tech","prism_creative"].includes(type ?? "")) {
     const config = { ...DEFAULT_HYPERDRIVE_CONFIG, ...(cfg ?? {}) } as HyperdriveConfig;
+    if (type === "atlas_agency")   return <AtlasAgencyPage config={config} />;
+    if (type === "nexus_tech")     return <NexusTechPage config={config} />;
+    if (type === "prism_creative") return <PrismCreativePage config={config} />;
     return <HyperdriveAnimatedPage config={config} />;
   }
-  if (type === "education_center") {
+  if (["education_center","bloom_kids","mentor_coach","slate_academy"].includes(type ?? "")) {
     const config = { ...DEFAULT_FUTURE_CONFIG, ...(cfg ?? {}) } as FutureConfig;
+    if (type === "bloom_kids")    return <BloomKidsPage config={config} />;
+    if (type === "mentor_coach")  return <MentorCoachPage config={config} />;
+    if (type === "slate_academy") return <SlateAcademyPage config={config} />;
     return <FutureAnimatedPage config={config} />;
   }
-  if (type === "online_shop") {
+  if (["online_shop","luxe_boutique","zest_food","mono_store"].includes(type ?? "")) {
     const config = { ...DEFAULT_KSHOP_CONFIG, ...(cfg ?? {}) } as KShopConfig;
+    if (type === "luxe_boutique") return <LuxeBoutiquePage config={config} />;
+    if (type === "zest_food")     return <ZestFoodPage config={config} />;
+    if (type === "mono_store")    return <MonoStorePage config={config} />;
     return <KShopAnimatedPage config={config} />;
   }
   return null;
 }
 
+const ANIMATED_TYPES = [
+  "animated_cafe","noir_restaurant","street_food","garden_bistro",
+  "driving_center","atlas_agency","nexus_tech","prism_creative",
+  "education_center","bloom_kids","mentor_coach","slate_academy",
+  "online_shop","luxe_boutique","zest_food","mono_store",
+];
+
 function isAnimatedTemplate(schemaJson: string | null): boolean {
   const schema = safeJsonParse<Record<string, unknown>>(schemaJson, {});
-  return ["animated_cafe", "driving_center", "education_center", "online_shop"].includes(schema.__templateType as string);
+  return ANIMATED_TYPES.includes(schema.__templateType as string);
 }
 
 export default function MarketplacePage() {
